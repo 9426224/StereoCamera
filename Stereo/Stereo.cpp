@@ -5,6 +5,7 @@
 #include <mutex>
 
 using namespace cv;
+using namespace std;
 
 #pragma region ParameterDefine
 void* hLenaDDI; //设备初始化使用的指针
@@ -87,8 +88,11 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 
 void ImgCalc(Mat img)
 {
-	Mat left = img(Rect(0, 0, img.cols / 2, img.rows / 2));
+	Mat left = img(Rect(0, 0, img.cols / 2, img.rows));
+	Mat right = img(Rect(1280, 0, img.cols / 2, img.rows));
 
+	cout << "left:" << left.cols << " " << left.rows << endl;
+	cout << "right:" << right.cols << " " << right.rows << endl;
 }
 
 int main()
@@ -128,8 +132,8 @@ int main()
 			flip(imgBuffer, img, 0);
 			flag = 0;
 			imgMutex.unlock();
-			//ImgCalc(img);
-			imshow("Color Image", img);
+			ImgCalc(img);
+			//imshow("Color Image", img);
 		}
 		else
 		{
