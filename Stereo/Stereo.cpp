@@ -7,7 +7,7 @@
 using namespace cv;
 using namespace std;
 
-#pragma region ParameterDefine
+#pragma region DefaultParameterDefine
 void* hLenaDDI; //设备初始化使用的指针
 void* pHandleLenaDDI; //设备指针
 DEVSELINFO pDevSelInfo; //设备选择信息
@@ -19,6 +19,34 @@ Mat imgBuffer; //图像缓存流
 Mat img; //输出图像
 std::mutex imgMutex; //互斥锁，确保同一时间只有一个线程访问对象
 int flag = 0; //辅助互斥锁
+#pragma endregion
+
+#pragma region SGBMParameterDefine
+Mat MatrixL = (Mat_<double>(3, 3) << 
+	3252.272070364151, 0, 0, 
+	0, 3236.910134939964, 0, 
+	246.556379012332, 747.8802790048338, 1);//Left相机内参矩阵
+
+Mat MatrixR = (Mat_<double>(3, 3) << 
+	3264.14258131667, 0, 0,
+	0, 3265.420090612704, 0,
+	666.2227523335539, 559.3101448292923, 1);//Right相机内参矩阵
+
+Mat distCoeffL = (Mat_<double>(5, 1) << -0.316763588, 6.33384747, 0.00279558433, 0.0000545577158, -61.5157155);//Left相机畸变系数
+Mat distCoeffR = (Mat_<double>(5, 1) << -0.316763588, 6.33384747, 0.00279558433, 0.0000545577158, -61.5157155);//Right相机畸变系数
+
+//Mat Rec = (Mat_<double>(3, 1) << -401.9838183195155, -6.260859479290675, 7.779318681506831); //rec旋转向量
+Mat Transcation = (Mat_<double>(3, 1) << -401.9838183195155, -6.260859479290675, 7.779318681506831);
+Mat Rotation = (Mat_<double>(3, 3) << 
+	0.993019189673893, 0.012241022675804, 0.117316010430182, 
+	-0.005392354562595, 0.998271761054028, -0.058518489337652,
+	-0.117829586486907, 0.057477373338907, 0.991369023170678); //摄像头2相对于摄像头1的旋转矩阵
+
+Size imageSize;// 图像尺寸
+
+Mat Rl, Rr, Pl, Pr, Q; 
+Rect validROIL, validROIR; //图像校正后会对图像进行裁剪，这里的validROI指的是裁剪之后的区域
+Mat mapLx, mapLy, mapRx, mapRy; //映射表
 #pragma endregion
 
 /// <summary>
@@ -89,10 +117,22 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 void ImgCalc(Mat img)
 {
 	Mat left = img(Rect(0, 0, img.cols / 2, img.rows));
-	Mat right = img(Rect(1280, 0, img.cols / 2, img.rows));
+	Mat right = img(Rect(img.cols / 2, 0, img.cols / 2, img.rows));
+	
+	imageSize = Size(left.cols, left.rows);
 
-	cout << "left:" << left.cols << " " << left.rows << endl;
-	cout << "right:" << right.cols << " " << right.rows << endl;
+	//Rodrigues(Rec, R); //Rodrigues变换，将Rec旋转向量变换为旋转矩阵
+	
+	stereoRectify(MatrixL, distCoeffL, MatrixR, distCoeffR, imageSize, Rotation, Transcation, Rl, Rr, Pl, Pr, Q, CALIB_ZERO_DISPARITY,0, imageSize, &validROIL, &validROIR);
+	
+	initUndistortRectifyMap(MatrixL, distCoeffL, Rl, Pl, imageSize, CV_16SC2, mapLx, mapLy);
+	initUndistortRectifyMap(MatrixR, distCoeffR, Rr, Pr, imageSize, CV_16SC2, mapRx, mapRy);
+
+	remap(left, left, mapLx, mapLy, INTER_LINEAR);
+	remap(right, right, mapRx, mapRy, INTER_LINEAR);
+
+
+
 }
 
 int main()
