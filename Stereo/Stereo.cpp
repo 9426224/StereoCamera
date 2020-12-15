@@ -88,6 +88,7 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 void ImgCalc(Mat img)
 {
 	Mat left = img(Rect(0, 0, img.cols / 2, img.rows / 2));
+
 }
 
 int main()
@@ -127,8 +128,8 @@ int main()
 			flip(imgBuffer, img, 0);
 			flag = 0;
 			imgMutex.unlock();
-			ImgCalc(img);
-			//imshow("Color Image", img);
+			//ImgCalc(img);
+			imshow("Color Image", img);
 		}
 		else
 		{
