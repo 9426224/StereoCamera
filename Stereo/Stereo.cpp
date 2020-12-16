@@ -47,6 +47,7 @@ Size imageSize;// 图像尺寸
 Mat Rl, Rr, Pl, Pr, Q; 
 Rect validROIL, validROIR; //图像校正后会对图像进行裁剪，这里的validROI指的是裁剪之后的区域
 Mat mapLx, mapLy, mapRx, mapRy; //映射表
+std::mutex testMutex;
 #pragma endregion
 
 /// <summary>
@@ -131,8 +132,13 @@ void ImgCalc(Mat img)
 	remap(left, left, mapLx, mapLy, INTER_LINEAR);
 	remap(right, right, mapRx, mapRy, INTER_LINEAR);
 
+	testMutex.lock();
+
 	imshow("Left", left);
 	cvWaitKey(0);
+
+	testMutex.unlock();
+	
 
 
 }
