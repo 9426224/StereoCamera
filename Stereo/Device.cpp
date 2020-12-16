@@ -30,12 +30,14 @@ bool Device::Init()
 
 	USBType = (pStreamDepthInfo[0].nWidth == 1280) ? 1 : 0;
 
+	LenaDDI_SetDepthDataType(pHandleLenaDDI, &pDevSelInfo, USBType ? (depthOption > 12 ? LenaDDI_DEPTH_DATA_14_BITS : LenaDDI_DEPTH_DATA_11_BITS) : LenaDDI_DEPTH_DATA_8_BITS);
+
 	fps = LenaDDI_IsInterleaveDevice(pHandleLenaDDI, &pDevSelInfo) ? 60 : 30;
 	
 	return true;
 }
 
-void Device::Release(void * dev)
+void Device::Release(void *dev)
 {
 	if (dev != nullptr)
 	{

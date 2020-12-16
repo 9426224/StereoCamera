@@ -2,10 +2,6 @@
 #include "DepthImg.h"
 #include "ColorImg.h"
 
-int colorResolution = 2; //YUV: 0：1280 * 720, 1:2560 * 720, 2 : 2560 * 960, 3 : 1280 * 480, 4 : 640 * 480, 5 : 1280 * 720MJPG, 6 : 2560 * 720MJPG, 7 : 2560 * 960MJPG
-int depthResolution = 0; // 深度分辨率 0-> 1280*720  1-> 640*480 -1-> No
-int depthOption = 11; // 11-> 11bit视差图  14-> 14bit深度图 8-> 8bit视差图  USB2.0下：8bit视差图
-
 DepthImg depthImg(0, 0, 0);
 ColorImg colorImg(0, 0);
 
@@ -41,11 +37,11 @@ int main()
 	Device device;
 	device.Init();
 
-	if (depthResolution != -1)
+	if (device.depthResolution != -1)
 	{
-		depthImg.width = device.pStreamDepthInfo[depthResolution].nWidth;
-		depthImg.height = device.pStreamDepthInfo[depthResolution].nHeight;
-		depthImg.type = device.USBType ? depthOption : 8;
+		depthImg.width = device.pStreamDepthInfo[device.depthResolution].nWidth;
+		depthImg.height = device.pStreamDepthInfo[device.depthResolution].nHeight;
+		depthImg.type = device.USBType ? device.depthOption : 8;
 	}
 	
 	depthImg.Init();
@@ -53,9 +49,9 @@ int main()
 	LenaDDI_OpenDeviceEx(
 		device.pHandleLenaDDI, 
 		&device.pDevSelInfo, 
-		colorResolution, 
+		device.colorResolution,
 		colorImg.isImgRGB, 
-		depthResolution, 
+		device.depthResolution,
 		LenaDDIDepthSwitch::Depth1, 
 		ImgCallback, 
 		NULL, 
