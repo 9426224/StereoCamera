@@ -7,7 +7,7 @@ public:
 	Device() : hLenaDDI(nullptr) {}
 	~Device();
 	
-	void* hLenaDDI; //设备设备初始化使用的指针
+	void* hLenaDDI = NULL; //设备设备初始化使用的指针
 	DEVSELINFO pDevSelInfo; //设备选择信息
 	void* pHandleLenaDDI; //设备指针
 	std::vector<DEVINFORMATIONEX> devInfo; //设备信息链
@@ -16,7 +16,7 @@ public:
 	LenaDDI_STREAM_INFO pStreamColorInfo[64], pStreamDepthInfo[64];
 
 	bool Init();
-	void Release();
+	void Release(void *dev);
 private:
 	bool GetLenaDDIDevice();
 };

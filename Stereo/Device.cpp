@@ -35,13 +35,13 @@ bool Device::Init()
 	return true;
 }
 
-void Device::Release()
+void Device::Release(void * dev)
 {
-	if (pHandleLenaDDI != nullptr)
+	if (dev != nullptr)
 	{
-		LenaDDI_CloseDevice(pHandleLenaDDI, &pDevSelInfo);
-		LenaDDI_Release(&pHandleLenaDDI);
-		pHandleLenaDDI = nullptr;
+		LenaDDI_CloseDevice(dev, &pDevSelInfo);
+		LenaDDI_Release(&dev);
+		dev = nullptr;
 	}
 }
 
@@ -49,12 +49,7 @@ bool Device::GetLenaDDIDevice()
 {
 	if (LenaDDI_Init(&hLenaDDI, false) < 0)
 	{
-		if (hLenaDDI != NULL)
-		{
-			LenaDDI_Release(&hLenaDDI);
-			hLenaDDI = NULL;
-		}
-		return false;
+		Release(hLenaDDI);
 	}
 	if (hLenaDDI != NULL)
 	{
@@ -70,6 +65,7 @@ bool Device::GetLenaDDIDevice()
 				LenaDDI_GetDeviceInfoEx(hLenaDDI, &pdevSelInfo, &pdevinfo);
 				devInfo.push_back(pdevinfo);
 			}
+			Release(hLenaDDI);
 			return true;
 		}
 	}
