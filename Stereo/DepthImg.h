@@ -16,7 +16,7 @@ private:
 	unsigned char* pDepthBuf; //深度流指针
 	
 	std::mutex depthMutex; //深度图像输出互斥锁
-	float zoom; //图像缩放系数
+	float zoom = 1.0; //图像缩放系数
 	int key; //捕获键盘输入字符
 	cv::Mat depthBuf; //深度流
 	

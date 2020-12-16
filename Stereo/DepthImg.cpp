@@ -1,5 +1,7 @@
 #include "DepthImg.h"
 
+using namespace cv;
+
 DepthImg::~DepthImg()
 {
 
@@ -40,7 +42,7 @@ void DepthImg::Play(unsigned char* buf)
 {
 	if (type == 8)
 	{
-		cv::Mat img(cv::Size(width * 2, height), CV_8UC1, buf);
+		Mat img(Size(width * 2, height), CV_8UC1, buf);
 		depthBuf = img;
 	}
 	else
@@ -56,18 +58,18 @@ void DepthImg::Play(unsigned char* buf)
 		default:
 			break;
 		}
-		cv::Mat img(cv::Size(width, height), CV_8UC3, pDepthBuf);
+		Mat img(Size(width, height), CV_8UC3, pDepthBuf);
 		depthBuf = img;
 	}
 	if (zoom != 1.0)
 	{
-		cv::resize(depthBuf, depthBuf, cv::Size(depthBuf.cols * zoom, depthBuf.rows * zoom), 0, 0, CV_INTER_LINEAR);
+		resize(depthBuf, depthBuf, Size(depthBuf.cols * zoom, depthBuf.rows * zoom), 0, 0, INTER_LINEAR);
 	}
-	//cv::GaussianBlur(depthBuf, depthBuf, cv::Size(5, 5), 0, 0); //高斯滤波
+	//GaussianBlur(depthBuf, depthBuf, Size(5, 5), 0, 0); //高斯滤波
 
 	imshow("Depth Image", depthBuf);
 
-	key = cv::waitKey(1);
+	key = waitKey(1);
 
 	depthMutex.lock();
 	if (key == 'S')
