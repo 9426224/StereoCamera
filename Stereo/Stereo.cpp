@@ -131,6 +131,8 @@ void ImgCalc(Mat img)
 	remap(left, left, mapLx, mapLy, INTER_LINEAR);
 	remap(right, right, mapRx, mapRy, INTER_LINEAR);
 
+	imshow("Left", left);
+	cvWaitKey(0);
 
 
 }
