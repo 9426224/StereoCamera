@@ -143,10 +143,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ColorImg.cpp" />
+    <ClCompile Include="DepthImg.cpp" />
+    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Stereo.cpp" />
+    <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ColorImg.h" />
+    <ClInclude Include="DepthImg.h" />
+    <ClInclude Include="Device.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -1,8 +1,10 @@
-﻿#include "stdafx.h"
+﻿/*
+#include "stdafx.h"
 #include "opencv2/opencv.hpp"
 #include <iostream>
 #include "PDI_DM.H"
 #include <mutex>
+#include "Device.h"
 
 using namespace cv;
 using namespace std;
@@ -48,6 +50,7 @@ Mat Rl, Rr, Pl, Pr, Q;
 Rect validROIL, validROIR; //图像校正后会对图像进行裁剪，这里的validROI指的是裁剪之后的区域
 Mat mapLx, mapLy, mapRx, mapRy; //映射表
 Ptr<StereoSGBM> sgbm = StereoSGBM::create(0, 16, 3);
+
 #pragma endregion
 
 /// <summary>
@@ -115,64 +118,10 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 	}
 }
 
-void ImgCalc(Mat img)
-{
-	Mat left = img(Rect(0, 0, img.cols / 2, img.rows));
-	Mat right = img(Rect(img.cols / 2, 0, img.cols / 2, img.rows));
-	
-	//imageSize = Size(left.cols, left.rows);
-
-	//Rodrigues(Rec, R); //Rodrigues变换，将Rec旋转向量变换为旋转矩阵
-	
-	//stereoRectify(MatrixL, distCoeffL, MatrixR, distCoeffR, imageSize, Rotation, Transcation, Rl, Rr, Pl, Pr, Q, CALIB_ZERO_DISPARITY,0, imageSize, &validROIL, &validROIR);
-	
-	//initUndistortRectifyMap(MatrixL, distCoeffL, Rl, Pl, imageSize, CV_16SC2, mapLx, mapLy);
-	//initUndistortRectifyMap(MatrixR, distCoeffR, Rr, Pr, imageSize, CV_16SC2, mapRx, mapRy);
-
-	//remap(left, left, mapLx, mapLy, INTER_LINEAR);
-	//remap(right, right, mapRx, mapRy, INTER_LINEAR);
-
-
-	int sgbmWinSize = 5;
-	int NumDisparities = 416;
-	int UniquenessRatio = 6;
-	int cn = left.channels();
-	sgbm->setPreFilterCap(63);
-	sgbm->setBlockSize(sgbmWinSize);
-	sgbm->setP1(8 * cn * sgbmWinSize * sgbmWinSize);
-	sgbm->setP2(32 * cn * sgbmWinSize * sgbmWinSize);
-	sgbm->setMinDisparity(0);
-	sgbm->setNumDisparities(NumDisparities);
-	sgbm->setUniquenessRatio(UniquenessRatio);
-	sgbm->setSpeckleRange(10);
-	sgbm->setSpeckleWindowSize(100);
-	sgbm->setDisp12MaxDiff(1);
-	sgbm->setMode(StereoSGBM::MODE_SGBM);
-	
-
-	Mat disp, dispf, disp8;
-	sgbm->compute(left, right, disp);
-	
-	Mat image1p, image2p;
-	copyMakeBorder(left, image1p, 0, 0, NumDisparities, 0, IPL_BORDER_REPLICATE);
-	copyMakeBorder(right, image2p, 0, 0, NumDisparities, 0, IPL_BORDER_REPLICATE);
-
-	dispf = disp.colRange(NumDisparities, image2p.cols - NumDisparities);
-
-	dispf.convertTo(disp8, CV_8U, 255 / (NumDisparities * 16.));
-
-	imshow("深度图", disp8);
-
-	//Mat color(dispf.size(), CV_8UC3);
-	//GenerateFalseMap(disp8, color);
-
-	waitKey(0);
-	
-
-
-}
-
-int main()
+/// <summary>
+/// 彩色图像输出
+/// </summary>
+int ColorImgOutput()
 {
 	pHandleLenaDDI = nullptr;
 
@@ -227,3 +176,98 @@ int main()
 	}
 	return 0;
 }
+
+/// <summary>
+/// 
+/// </summary>
+/// <returns></returns>
+int DepthImgOutput()
+{
+	pHandleLenaDDI = nullptr;
+
+	if (!GetLenaDDIDevice(devInfo))
+	{
+		printf_s("Get Device Failed!\n");
+		return -1;
+	}
+
+	for (size_t i = 0; i < devInfo.size(); i++) //LenaCV设备的对应编号查找
+	{
+		if (strcmp(devInfo[i].strDevName, "Lena3d:vid_0211 pid_5838") == 0)
+		{
+			pDevSelInfo.index = i;
+		}
+	}
+
+	LenaDDI_Init2(&pHandleLenaDDI, false, true); //设备初始化
+
+
+
+}
+
+void ImgCalc(Mat img)
+{
+	Mat left = img(Rect(0, 0, img.cols / 2, img.rows));
+	Mat right = img(Rect(img.cols / 2, 0, img.cols / 2, img.rows));
+	
+	//imageSize = Size(left.cols, left.rows);
+
+	//Rodrigues(Rec, R); //Rodrigues变换，将Rec旋转向量变换为旋转矩阵
+	
+	//stereoRectify(MatrixL, distCoeffL, MatrixR, distCoeffR, imageSize, Rotation, Transcation, Rl, Rr, Pl, Pr, Q, CALIB_ZERO_DISPARITY,0, imageSize, &validROIL, &validROIR);
+	
+	//initUndistortRectifyMap(MatrixL, distCoeffL, Rl, Pl, imageSize, CV_16SC2, mapLx, mapLy);
+	//initUndistortRectifyMap(MatrixR, distCoeffR, Rr, Pr, imageSize, CV_16SC2, mapRx, mapRy);
+
+	//remap(left, left, mapLx, mapLy, INTER_LINEAR);
+	//remap(right, right, mapRx, mapRy, INTER_LINEAR);
+
+
+	int sgbmWinSize = 5;
+	int NumDisparities = 416;
+	int UniquenessRatio = 6;
+	int cn = left.channels();
+	sgbm->setPreFilterCap(63);
+	sgbm->setBlockSize(sgbmWinSize);
+	sgbm->setP1(8 * cn * sgbmWinSize * sgbmWinSize);
+	sgbm->setP2(32 * cn * sgbmWinSize * sgbmWinSize);
+	sgbm->setMinDisparity(0);
+	sgbm->setNumDisparities(NumDisparities);
+	sgbm->setUniquenessRatio(UniquenessRatio);
+	sgbm->setSpeckleRange(10);
+	sgbm->setSpeckleWindowSize(100);
+	sgbm->setDisp12MaxDiff(1);
+	sgbm->setMode(StereoSGBM::MODE_SGBM);
+	
+	
+
+	Mat disp, dispf, disp8;
+	sgbm->compute(left, right, disp);
+	
+	Mat image1p, image2p;
+	copyMakeBorder(left, image1p, 0, 0, NumDisparities, 0, IPL_BORDER_REPLICATE);
+	copyMakeBorder(right, image2p, 0, 0, NumDisparities, 0, IPL_BORDER_REPLICATE);
+
+	dispf = disp.colRange(NumDisparities, image2p.cols - NumDisparities);
+
+	dispf.convertTo(disp8, CV_8U, 255 / (NumDisparities * 16.));
+
+	imshow("深度图", disp8);
+
+	//Mat color(dispf.size(), CV_8UC3);
+	//GenerateFalseMap(disp8, color);
+
+	cvWaitKey(1);
+	
+
+
+}
+
+int main(void)
+{
+	Device device;
+	device.Init();
+	device.Release();
+	//ColorImgOutput();
+}
+*/
