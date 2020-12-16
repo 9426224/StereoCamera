@@ -1,9 +1,10 @@
+#include <thread>
 #include "Device.h"
 #include "DepthImg.h"
 #include "ColorImg.h"
 
-DepthImg depthImg(0, 0, 0);
-ColorImg colorImg(0, 0);
+DepthImg *depthImg = nullptr;
+ColorImg *colorImg = nullptr;
 
 /// <summary>
 /// Í¼Ïñ»Øµ÷º¯Êý
@@ -20,11 +21,11 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 {
 	if (LenaDDIImageType::IsImageColor(imgType))
 	{
-		colorImg.Play(imgBuf);
+		colorImg->Play(imgBuf);
 	}
 	else if (LenaDDIImageType::IsImageDepth(imgType))
 	{
-		depthImg.Play(imgBuf);
+		depthImg->Play(imgBuf);
 	}
 	else
 	{
@@ -35,32 +36,21 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 int main()
 {
 	Device device;
+	device.callbackFn = ImgCallback;
 	device.Init();
+
+	colorImg = new ColorImg(0, 0);
 
 	if (device.depthResolution != -1)
 	{
-		depthImg.width = device.pStreamDepthInfo[device.depthResolution].nWidth;
-		depthImg.height = device.pStreamDepthInfo[device.depthResolution].nHeight;
-		depthImg.type = device.USBType ? device.depthOption : 8;
+		depthImg = new DepthImg(device.pStreamDepthInfo[device.depthResolution].nWidth,
+			device.pStreamDepthInfo[device.depthResolution].nHeight,
+			device.USBType ? device.depthOption : 8);
 	}
-	
-	depthImg.Init();
 
-	LenaDDI_OpenDeviceEx(
-		device.pHandleLenaDDI, 
-		&device.pDevSelInfo, 
-		device.colorResolution,
-		colorImg.isImgRGB, 
-		device.depthResolution,
-		LenaDDIDepthSwitch::Depth1, 
-		ImgCallback, 
-		NULL, 
-		&device.fps, 
-		0
-	);
+	depthImg->Init();
 
-	while (1)
-	{
+	Sleep(-1);
 
-	}
+	return 0;
 }

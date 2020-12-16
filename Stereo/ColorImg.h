@@ -6,7 +6,6 @@ public:
 	ColorImg(int width, int height) : width(width), height(height) {}
 	~ColorImg();
 
-	bool isImgRGB = true;
 	int width, height;
 
 	void Play(unsigned char* buf);

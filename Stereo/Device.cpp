@@ -33,6 +33,8 @@ bool Device::Init()
 	LenaDDI_SetDepthDataType(pHandleLenaDDI, &pDevSelInfo, USBType ? (depthOption > 12 ? LenaDDI_DEPTH_DATA_14_BITS : LenaDDI_DEPTH_DATA_11_BITS) : LenaDDI_DEPTH_DATA_8_BITS);
 
 	fps = LenaDDI_IsInterleaveDevice(pHandleLenaDDI, &pDevSelInfo) ? 60 : 30;
+
+	LenaDDI_OpenDeviceEx(pHandleLenaDDI, &pDevSelInfo, colorResolution, isImgRGB, depthResolution, LenaDDIDepthSwitch::Depth1, callbackFn, NULL, &fps, 0);
 	
 	return true;
 }
