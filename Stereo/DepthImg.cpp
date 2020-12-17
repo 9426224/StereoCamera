@@ -85,6 +85,7 @@ void DepthImg::Play(unsigned char* buf)
 
 void DepthImg::DepthImageProcess(Mat img)
 {
+	imshow("Depth",img);
 
 }
 
