@@ -17,5 +17,11 @@ void ColorImg::Play(unsigned char* buf)
 
 	imshow("Color Img", colorBuf);
 
-	waitKey(1);
+	int key = waitKey(1);
+
+	if (key == 's')
+	{
+		std::string Img_Name = "D:\\Picture\\Color" + std::to_string(k++) + ".bmp";
+		imwrite(Img_Name, colorBuf);
+	}
 } 

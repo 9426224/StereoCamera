@@ -1,6 +1,9 @@
-#include "stdafx.h"
-#include "PDI_DM.H"
 #include "opencv2/opencv.hpp"
+
+#include "stdafx.h"
+
+#include "PDI_DM.H"
+
 
 class Device {
 public:
