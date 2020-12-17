@@ -150,14 +150,28 @@ void UpdateD11DisplayImage_DIB24(RGBQUAD* pColorPaletteD11, BYTE* pDepthD11, BYT
 	nBPS = ((cx * 3 + 3) / 4) * 4;
 	pWSL = (WORD*)pDepthD11;
 	pDL = pDepthDIB24;
-	for (y = 0; y < cy; y++) {
+	//for (y = 0; y < cy; y++) {
+	//	pWS = pWSL;
+	//	pD = pDL;
+	//	for (x = 0; x < cx; x++) {
+	//		pClr = &(pColorPaletteD11[pWS[x]]);
+	//		pD[0] = pClr->rgbBlue; //B
+	//		pD[1] = pClr->rgbGreen; //G
+	//		pD[2] = pClr->rgbRed; //R
+	//		pD += 3;
+	//	}
+	//	pWSL += cx;
+	//	pDL += nBPS;
+	//}
+	for (y = 0; y < cy; y++)
+	{
 		pWS = pWSL;
 		pD = pDL;
-		for (x = 0; x < cx; x++) {
-			pClr = &(pColorPaletteD11[pWS[x]]);
-			pD[0] = pClr->rgbBlue; //B
-			pD[1] = pClr->rgbGreen; //G
-			pD[2] = pClr->rgbRed; //R
+		for (x = 0; x < cx; x++)
+		{
+			pD[0] = pWS[x] / 8;//B
+			pD[1] = pWS[x] / 8;//G
+			pD[2] = pWS[x] / 8;//R
 			pD += 3;
 		}
 		pWSL += cx;
