@@ -2,13 +2,16 @@
 
 using namespace cv;
 
+/// <summary>
+/// 析构函数
+/// </summary>
 DepthImg::~DepthImg()
 {
 
 }
 
 /// <summary>
-/// 深度图创建
+/// 深度图像暂存变量创建
 /// </summary>
 void DepthImg::Init()
 {

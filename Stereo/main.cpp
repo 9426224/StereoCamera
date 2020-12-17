@@ -39,7 +39,8 @@ int main()
 	device.callbackFn = ImgCallback;
 	device.Init();
 
-	colorImg = new ColorImg(0, 0);
+	colorImg = new ColorImg(device.pStreamColorInfo[device.colorResolution].nWidth, 
+		device.pStreamColorInfo[device.colorResolution].nHeight);
 
 	if (device.depthResolution != -1)
 	{
