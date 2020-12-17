@@ -70,7 +70,8 @@ void DepthImg::Play(unsigned char* buf)
 	}
 	//GaussianBlur(depthBuf, depthBuf, Size(5, 5), 0, 0); //¸ßË¹ÂË²¨
 
-	imshow("Depth Image", depthBuf);
+	//imshow("Depth Image", depthBuf);
+	DepthImageProcess(depthBuf);
 
 	key = waitKey(1);
 
@@ -80,6 +81,10 @@ void DepthImg::Play(unsigned char* buf)
 		zoom = (zoom == 1.0) ? 0.5 : 1.0;
 	}
 	depthMutex.unlock();
+}
+
+void DepthImg::DepthImageProcess(Mat img)
+{
 
 }
 

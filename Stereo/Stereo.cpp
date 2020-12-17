@@ -1,4 +1,5 @@
 ﻿#include <thread>
+
 #include "Device.h"
 #include "DepthImg.h"
 #include "ColorImg.h"

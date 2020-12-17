@@ -1,5 +1,6 @@
-#include "Utility.h"
 #include "math.h"
+
+#include "Utility.h"
 
 /// <summary>
 /// HSV色彩空间转换为RGB色彩空间
@@ -64,7 +65,6 @@ void HSV_to_RGB(double H, double S, double V, double& R, double& G, double& B)
 	}
 }
 
-
 void SetBaseGrayPaletteD11(RGBQUAD* pGrayPaletteD11)
 {
 	int i;
@@ -92,6 +92,7 @@ void SetBaseGrayPaletteD11(RGBQUAD* pGrayPaletteD11)
 		pGrayPaletteD11[i].rgbReserved = 0;
 	}
 }
+
 void SetBaseGrayPaletteZ14(RGBQUAD* pGrayPaletteZ14)
 {
 	int i;
@@ -137,7 +138,6 @@ void SetBaseGrayPaletteZ14(RGBQUAD* pGrayPaletteZ14)
 	}
 }
 
-
 void UpdateD11DisplayImage_DIB24(RGBQUAD* pColorPaletteD11, BYTE* pDepthD11, BYTE* pDepthDIB24, int cx, int cy)
 {
 	int x, y, nBPS;
@@ -164,6 +164,7 @@ void UpdateD11DisplayImage_DIB24(RGBQUAD* pColorPaletteD11, BYTE* pDepthD11, BYT
 		pDL += nBPS;
 	}
 }
+
 void UpdateZ14DisplayImage_DIB24(RGBQUAD* pColorPaletteZ14, BYTE* pDepthZ14, BYTE* pDepthDIB24, int cx, int cy)
 {
 	int x, y, nBPS;
@@ -316,6 +317,7 @@ void DmColorMode11(RGBQUAD* pallete, int mode)
 
 
 }
+
 void DmColorMode14(RGBQUAD* pallete, int mode)
 {
 #define CP1	0.75
