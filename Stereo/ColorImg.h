@@ -8,8 +8,9 @@ public:
 	void Play(unsigned char* buf);
 
 	int width, height;
+	cv::Mat colorBuf; //彩色流
 
 private:
 	int k = 1;
-	cv::Mat colorBuf; //彩色流
+	
 };

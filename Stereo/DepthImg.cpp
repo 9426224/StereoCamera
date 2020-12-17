@@ -1,7 +1,5 @@
 #include "DepthImg.h"
 
-using namespace cv;
-
 /// <summary>
 /// 析构函数
 /// </summary>
@@ -45,7 +43,7 @@ void DepthImg::Play(unsigned char* buf)
 {
 	if (type == 8)
 	{
-		Mat img(Size(width * 2, height), CV_8UC1, buf);
+		cv::Mat img(cv::Size(width * 2, height), CV_8UC1, buf);
 		depthBuf = img;
 	}
 	else
@@ -61,24 +59,7 @@ void DepthImg::Play(unsigned char* buf)
 		default:
 			break;
 		}
-		Mat img(Size(width, height), CV_8UC3, pDepthBuf);
+		cv::Mat img(cv::Size(width, height), CV_8UC3, pDepthBuf);
 		depthBuf = img;
 	}
-	//GaussianBlur(depthBuf, depthBuf, Size(5, 5), 0, 0); //高斯滤波
-
-	//imshow("Depth Image", depthBuf);
-	DepthImageProcess(depthBuf);
-
-	int key = waitKey(1);
-
-	if (key == 's')
-	{
-		std::string Img_Name = "D:\\Picture\\Depth" + std::to_string(k++) + ".bmp";
-		imwrite(Img_Name, depthBuf);
-	}
-}
-
-void DepthImg::DepthImageProcess(Mat img)
-{
-	imshow("Depth",img);
 }

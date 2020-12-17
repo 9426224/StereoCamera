@@ -169,9 +169,19 @@ void UpdateD11DisplayImage_DIB24(RGBQUAD* pColorPaletteD11, BYTE* pDepthD11, BYT
 		pD = pDL;
 		for (x = 0; x < cx; x++)
 		{
-			pD[0] = pWS[x] / 8;//B
-			pD[1] = pWS[x] / 8;//G
-			pD[2] = pWS[x] / 8;//R
+			if (pWS[x] < 400 || pWS[x]> 1800)
+			{
+				pD[0] = 0;//B
+				pD[1] = 0;//G
+				pD[2] = 0;//R
+			}
+			else
+			{
+				pD[0] = pWS[x] / 8;//B
+				pD[1] = pWS[x] / 8;//G
+				pD[2] = pWS[x] / 8;//R
+			}
+			
 			pD += 3;
 		}
 		pWSL += cx;

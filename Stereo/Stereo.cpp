@@ -4,6 +4,8 @@
 #include "DepthImg.h"
 #include "ColorImg.h"
 
+using namespace cv;
+
 DepthImg* depthImg = nullptr;
 ColorImg* colorImg = nullptr;
 
@@ -52,7 +54,35 @@ int main()
 
 	depthImg->Init();
 
-	Sleep(-1);
+	while (true)
+	{
+		if (depthImg->depthBuf.rows != 0 && colorImg->colorBuf.rows != 0)
+		{
+			Mat depth = depthImg->depthBuf;
+			Mat color = colorImg->colorBuf;
+			Mat colorCanny, depthFilter;
+
+			medianBlur(depth, depthFilter, 7);
+
+			//threshold(color, colorCanny, 0, 255, THRESH_OTSU);
+			GaussianBlur(color, color, Size(5, 5), 0, 0); //高斯滤波
+			Canny(color, colorCanny, 200, 400, 3); //Canny算子边缘检测
+			
+			std::vector<std::vector<Point>> contours;
+			std::vector<Vec4i> hierarchy;
+			findContours(colorCanny, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+			drawContours(depthFilter, contours, -1, (0, 0, 255), 3);
+
+			imshow("Depth", depthFilter);
+			//imshow("Color", colorCanny);
+			waitKey(1);
+
+
+			//cvtColor(colorBuf, colorBuf, CV_BGR2GRAY); //灰度图像转换
+			
+			//threshold(img, edge, 0, 255, THRESH_OTSU);
+		}
+	}
 
 	return 0;
 }
