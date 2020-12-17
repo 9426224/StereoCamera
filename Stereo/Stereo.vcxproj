@@ -146,7 +146,6 @@
     <ClCompile Include="ColorImg.cpp" />
     <ClCompile Include="DepthImg.cpp" />
     <ClCompile Include="Device.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="Stereo.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
