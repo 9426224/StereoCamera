@@ -12,12 +12,12 @@ public:
 	void Play(unsigned char *buf);
 
 	int width, height, type;
-	cv::Mat depthBuf; //Éî¶ÈÁ÷
+	cv::Mat depthBuf; //æ·±åº¦æµ
 	mutable std::shared_mutex depthMutex;
 
 private:
 	void BufferD11ConvertToGray(unsigned char* buf);
 	void BufferZ14ConvertToGray(unsigned char* buf);
 	
-	unsigned char* pDepthBuf; //Éî¶ÈÁ÷Ö¸Õë
+	unsigned char* pDepthBuf; //æ·±åº¦æµæŒ‡é’ˆ
 };

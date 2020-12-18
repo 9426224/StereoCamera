@@ -11,7 +11,7 @@ public:
 	void Play(unsigned char* buf);
 
 	int width, height;
-	cv::Mat colorBuf; //²ÊÉ«Á÷
+	cv::Mat colorBuf; //å½©è‰²æµ
 	mutable std::shared_mutex colorMutex;
 
 private:

@@ -10,10 +10,10 @@ public:
 	Device() : hLenaDDI(nullptr) {}
 	~Device();
 
-	//¿ÉĞŞ¸ÄµÄ²ÎÊı
-	int depthResolution = 0; // Éî¶È·Ö±æÂÊ 0-> 1280*720  1-> 640*480 -1-> No
-	int colorResolution = 0; //YUV: 0£º1280 * 720, 1:2560 * 720, 2 : 2560 * 960, 3 : 1280 * 480, 4 : 640 * 480, 5 : 1280 * 720MJPG, 6 : 2560 * 720MJPG, 7 : 2560 * 960MJPG
-	int depthOption = 11; // 11-> 11bitÊÓ²îÍ¼  14-> 14bitÉî¶ÈÍ¼ /*8-> 8bitÊÓ²îÍ¼*/  USB2.0ÏÂ£º8bitÊÓ²îÍ¼
+	//å¯ä»¥æ›´æ”¹çš„è®¾ç½®
+	int depthResolution = 0; // æ·±åº¦å›¾åƒåˆ†è¾¨ç‡ 0-> 1280*720  1-> 640*480 -1-> No
+	int colorResolution = 0; //YUV: 0:1280 * 720, 1:2560 * 720, 2 : 2560 * 960, 3 : 1280 * 480, 4 : 640 * 480, 5 : 1280 * 720MJPG, 6 : 2560 * 720MJPG, 7 : 2560 * 960MJPG
+	int depthOption = 11; // 11-> 11bitè§†å·®å›¾  14-> 14bitæ·±åº¦å›¾ /*8-> 8bitè§†å·®å›¾/  USB2.0ä¸‹é»˜è®¤ä¸º8bitè§†å·®å›¾
 	
 	
 	int USBType; //0:USB2.0 1:USB3.0
@@ -23,12 +23,12 @@ public:
 	bool Init();
 	
 private:
-	std::vector<DEVINFORMATIONEX> devInfo; //Éè±¸ĞÅÏ¢Á´
-	int fps; //Í¼ÏñÊä³öµÄÖ¡ÂÊ
+	std::vector<DEVINFORMATIONEX> devInfo; //è®¾å¤‡ä¿¡æ¯é“¾
+	int fps; //å›¾åƒè¾“å‡ºçš„å¸§ç‡
 	BOOL isImgRGB = true;
-	void* hLenaDDI = NULL; //Éè±¸Éè±¸³õÊ¼»¯Ê¹ÓÃµÄÖ¸Õë
-	DEVSELINFO pDevSelInfo; //Éè±¸Ñ¡ÔñĞÅÏ¢
-	void* pHandleLenaDDI; //Éè±¸Ö¸Õë
+	void* hLenaDDI = NULL; //è®¾å¤‡è®¾å¤‡åˆå§‹åŒ–ä½¿ç”¨çš„æŒ‡é’ˆ
+	DEVSELINFO pDevSelInfo; //è®¾å¤‡é€‰æ‹©ä¿¡æ¯
+	void* pHandleLenaDDI; //è®¾å¤‡æŒ‡é’ˆ
 
 	void Release(void *dev);
 	bool GetLenaDDIDevice();

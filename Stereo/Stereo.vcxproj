@@ -154,6 +154,19 @@
     <ClInclude Include="Device.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets" Condition="Exists('..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets')" />
+    <Import Project="..\packages\OpenCv.3.1.0\build\native\OpenCv.targets" Condition="Exists('..\packages\OpenCv.3.1.0\build\native\OpenCv.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\OpenCv.3.1.0\build\native\OpenCv.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCv.3.1.0\build\native\OpenCv.targets'))" />
+  </Target>
 </Project>

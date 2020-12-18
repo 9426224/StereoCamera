@@ -1,7 +1,7 @@
 #include "DepthImg.h"
 
 /// <summary>
-/// Îö¹¹º¯Êı
+/// ææ„å‡½æ•°
 /// </summary>
 DepthImg::~DepthImg()
 {
@@ -9,7 +9,7 @@ DepthImg::~DepthImg()
 }
 
 /// <summary>
-/// Éî¶ÈÍ¼ÏñÔİ´æ±äÁ¿´´½¨
+/// æ·±åº¦å›¾åƒæš‚å­˜å˜é‡åˆ›å»º
 /// </summary>
 void DepthImg::Init()
 {
@@ -24,9 +24,9 @@ void DepthImg::Init()
 }
 
 /// <summary>
-/// ¶ÁÈ¡ÊÓ²îÍ¼»òÉî¶È¾àÀëÍ¼
+/// è¯»å–è§†å·®å›¾æˆ–æ·±åº¦è·ç¦»å›¾
 /// </summary>
-/// <param name="buf">Éî¶ÈÍ¼ÏñÁ÷</param>
+/// <param name="buf">æ·±åº¦å›¾åƒæµ</param>
 void DepthImg::Play(unsigned char* buf)
 {
 	if (type == 8)
