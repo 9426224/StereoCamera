@@ -68,32 +68,33 @@ int main()
 			
 
 			/* 深度图处理 */
-			//cvtColor(depth, depth, COLOR_BGR2GRAY); //三通道灰度图转单通道灰度图,为后续计算做准备
+			cvtColor(depth, depth, COLOR_BGR2GRAY); //三通道灰度图转单通道灰度图,为后续计算做准备
 
 			//GaussianBlur(depth, depth, Size(5, 5), 0, 0); //高斯滤波
 
-			//medianBlur(depth, depth, 5); //中值滤波
+			medianBlur(depth, depth, 5); //中值滤波
 
 			//threshold(depth, depth, 0, 255, THRESH_OTSU); //大津法 二值化阈值处理
+
+
+			/* 彩色图处理 */
+			cvtColor(color, color, COLOR_BGR2GRAY); //彩色图像转为灰度图像
+
+			GaussianBlur(color, color, Size(5, 5), 0, 0); //高斯滤波
+
+			//threshold(color, color, 0, 255, THRESH_OTSU);
+
+			Canny(color, color, 50, 500, 3); //Canny算子边缘检测
+
+			std::vector<std::vector<Point>> contours;
+			std::vector<Vec4i> hierarchy;
+			findContours(color, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+			drawContours(depth, contours, -1, (0, 0, 255), 3);
 
 			imshow("depth", depth);
 			imshow("color", color);
 
 			waitKey(1);
-
-
-
-
-			/* 彩色图处理 */
-			////threshold(color, colorCanny, 0, 255, THRESH_OTSU);
-			//GaussianBlur(color, color, Size(5, 5), 0, 0); //高斯滤波
-			//Canny(color, colorCanny, 200, 400, 3); //Canny算子边缘检测
-			//
-			//std::vector<std::vector<Point>> contours;
-			//std::vector<Vec4i> hierarchy;
-			//findContours(colorCanny, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-			//drawContours(depthFilter, contours, -1, (0, 0, 255), 3);
-
 		}
 	}
 
