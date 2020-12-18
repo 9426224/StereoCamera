@@ -3,8 +3,6 @@
 #include <shared_mutex>
 #include <mutex>
 
-#include "Utility.h"
-
 class DepthImg {
 public:
 	DepthImg(int width,int height,int type): width(width), height(height), type(type) {}
@@ -18,8 +16,8 @@ public:
 	mutable std::shared_mutex depthMutex;
 
 private:
-	unsigned char* pDepthBuf; //深度流指针
+	void BufferD11ConvertToGray(unsigned char* buf);
+	void BufferZ14ConvertToGray(unsigned char* buf);
 	
-	RGBQUAD ColorPaletteD11[2048];
-	RGBQUAD ColorPaletteZ14[16384];
+	unsigned char* pDepthBuf; //深度流指针
 };
