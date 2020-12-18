@@ -169,7 +169,7 @@ void UpdateD11DisplayImage_DIB24(RGBQUAD* pColorPaletteD11, BYTE* pDepthD11, BYT
 		pD = pDL;
 		for (x = 0; x < cx; x++)
 		{
-			if (pWS[x] < 400 || pWS[x]> 1800)
+			if (pWS[x] < 20 || pWS[x]> 1600)
 			{
 				pD[0] = 0;//B
 				pD[1] = 0;//G
@@ -201,13 +201,26 @@ void UpdateZ14DisplayImage_DIB24(RGBQUAD* pColorPaletteZ14, BYTE* pDepthZ14, BYT
 	nBPS = ((cx * 3 + 3) / 4) * 4;
 	pWSL = (WORD*)pDepthZ14;
 	pDL = pDepthDIB24;
+
+	//for (y = 0; y < cy; y++) {
+	//	pD = pDL;
+	//	for (x = 0; x < cx; x++) {
+	//		pClr = &(pColorPaletteZ14[pWSL[x]]);
+	//		pD[0] = pClr->rgbBlue; //B
+	//		pD[1] = pClr->rgbGreen; //G
+	//		pD[2] = pClr->rgbRed; //R
+	//		pD += 3;
+	//	}
+	//	pWSL += cx;
+	//	pDL += nBPS;
+	//}
+
 	for (y = 0; y < cy; y++) {
 		pD = pDL;
 		for (x = 0; x < cx; x++) {
-			pClr = &(pColorPaletteZ14[pWSL[x]]);
-			pD[0] = pClr->rgbBlue; //B
-			pD[1] = pClr->rgbGreen; //G
-			pD[2] = pClr->rgbRed; //R
+			pD[0] = pWSL[x] / 64;
+			pD[1] = pWSL[x] / 64;
+			pD[2] = pWSL[x] / 64;
 			pD += 3;
 		}
 		pWSL += cx;
