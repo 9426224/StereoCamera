@@ -60,6 +60,7 @@ void DepthImg::Play(unsigned char* buf)
 			break;
 		}
 		cv::Mat img(cv::Size(width, height), CV_8UC3, pDepthBuf);
+		std::unique_lock<std::shared_mutex> lockDepth(depthMutex);
 		depthBuf = img;
 	}
 }

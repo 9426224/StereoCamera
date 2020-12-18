@@ -58,8 +58,14 @@ int main()
 	{
 		if (depthImg->depthBuf.rows != 0 && colorImg->colorBuf.rows != 0)
 		{
-			Mat depth = depthImg->depthBuf;
-			Mat color = colorImg->colorBuf;
+			Mat color,depth;
+			{
+				std::shared_lock<std::shared_mutex> lockColor(depthImg->depthMutex);
+				depth = depthImg->depthBuf;
+				std::shared_lock<std::shared_mutex> lockDepth(colorImg->colorMutex);
+				color = colorImg->colorBuf;
+			}
+			
 
 			/* 深度图处理 */
 			//cvtColor(depth, depth, COLOR_BGR2GRAY); //三通道灰度图转单通道灰度图,为后续计算做准备

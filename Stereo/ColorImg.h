@@ -1,5 +1,8 @@
 #include "opencv2/opencv.hpp"
 
+#include <shared_mutex>
+#include <mutex>
+
 class ColorImg {
 public:
 	ColorImg(int width, int height) : width(width), height(height) {}
@@ -9,8 +12,8 @@ public:
 
 	int width, height;
 	cv::Mat colorBuf; //²ÊÉ«Á÷
+	mutable std::shared_mutex colorMutex;
 
 private:
-	int k = 1;
 	
 };

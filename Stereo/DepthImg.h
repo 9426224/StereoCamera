@@ -1,5 +1,8 @@
 #include "opencv2/opencv.hpp"
 
+#include <shared_mutex>
+#include <mutex>
+
 #include "Utility.h"
 
 class DepthImg {
@@ -12,9 +15,9 @@ public:
 
 	int width, height, type;
 	cv::Mat depthBuf; //深度流
+	mutable std::shared_mutex depthMutex;
 
 private:
-	int k = 1;
 	unsigned char* pDepthBuf; //深度流指针
 	
 	RGBQUAD ColorPaletteD11[2048];
