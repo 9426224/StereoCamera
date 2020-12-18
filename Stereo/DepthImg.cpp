@@ -1,7 +1,5 @@
 #include "DepthImg.h"
 
-using namespace cv;
-
 /// <summary>
 /// 析构函数
 /// </summary>
@@ -22,18 +20,6 @@ void DepthImg::Init()
 	else
 	{
 		pDepthBuf = (unsigned char*)realloc(pDepthBuf, width * height * 3 * sizeof(unsigned char));
-		switch (type)
-		{
-		case 11: 
-			DmColorMode11(ColorPaletteD11, 0);
-			break;
-		case 14:
-			DmColorMode14(ColorPaletteZ14, 0);
-			break;
-		default:
-			printf("Wrong Depth Type");
-			break;
-		}
 	}
 }
 
@@ -45,7 +31,8 @@ void DepthImg::Play(unsigned char* buf)
 {
 	if (type == 8)
 	{
-		Mat img(Size(width * 2, height), CV_8UC1, buf);
+		cv::Mat img(cv::Size(width * 2, height), CV_8UC1, buf);
+		std::unique_lock<std::shared_mutex> lockDepth(depthMutex);
 		depthBuf = img;
 	}
 	else
@@ -53,33 +40,78 @@ void DepthImg::Play(unsigned char* buf)
 		switch (type) 
 		{
 		case 11:
-			UpdateD11DisplayImage_DIB24(ColorPaletteD11, buf, pDepthBuf, width, height);
+			BufferD11ConvertToGray(buf);
 			break;
 		case 14:
-			UpdateZ14DisplayImage_DIB24(ColorPaletteZ14, buf, pDepthBuf, width, height);
+			BufferZ14ConvertToGray(buf);
 			break;
 		default:
 			break;
 		}
-		Mat img(Size(width, height), CV_8UC3, pDepthBuf);
+		cv::Mat img(cv::Size(width, height), CV_8UC3, pDepthBuf);
+		std::unique_lock<std::shared_mutex> lockDepth(depthMutex);
 		depthBuf = img;
 	}
-	if (zoom != 1.0)
+}
+
+void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
+{
+	int nBPS;
+	unsigned short* pWSL, * pWS;
+	unsigned char* pDL, * pD;
+
+	nBPS = ((width * 3 + 3) / 4) * 4;
+	pWSL = (unsigned short*)buf;
+	pDL = pDepthBuf;
+
+	for (int i = 0; i < height; i++)
 	{
-		resize(depthBuf, depthBuf, Size(depthBuf.cols * zoom, depthBuf.rows * zoom), 0, 0, INTER_LINEAR);
+		pWS = pWSL;
+		pD = pDL;
+		for (int j = 0; j < width; j++)
+		{
+			if (pWS[j] < 20 || pWS[j]> 1600)
+			{
+				pD[0] = 0;//B
+				pD[1] = 0;//G
+				pD[2] = 0;//R
+			}
+			else
+			{
+				pD[0] = pWS[j] / 8;//B
+				pD[1] = pWS[j] / 8;//G
+				pD[2] = pWS[j] / 8;//R
+			}
+			pD += 3;
+		}
+		pWSL += width;
+		pDL += nBPS;
 	}
-	//GaussianBlur(depthBuf, depthBuf, Size(5, 5), 0, 0); //高斯滤波
-
-	imshow("Depth Image", depthBuf);
-
-	key = waitKey(1);
-
-	depthMutex.lock();
-	if (key == 'S')
-	{
-		zoom = (zoom == 1.0) ? 0.5 : 1.0;
-	}
-	depthMutex.unlock();
 
 }
 
+void DepthImg::BufferZ14ConvertToGray(unsigned char* buf)
+{
+	int nBPS;
+	unsigned short* pWSL, * pWS;
+	unsigned char* pDL, * pD;
+
+	nBPS = ((width * 3 + 3) / 4) * 4;
+	pWSL = (unsigned short*)buf;
+	pDL = pDepthBuf;
+
+
+	for (int y = 0; y < height; y++)
+	{
+		pD = pDL;
+		for (int x = 0; x < width; x++)
+		{
+			pD[0] = pWSL[x] / 64; //B
+			pD[1] = pWSL[x] / 64; //G
+			pD[2] = pWSL[x] / 64; //R
+			pD += 3;
+		}
+		pWSL += width;
+		pDL += nBPS;
+	}
+}

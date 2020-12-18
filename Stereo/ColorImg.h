@@ -1,16 +1,19 @@
-#include <mutex>
 #include "opencv2/opencv.hpp"
+
+#include <shared_mutex>
+#include <mutex>
 
 class ColorImg {
 public:
 	ColorImg(int width, int height) : width(width), height(height) {}
 	~ColorImg();
 
-	int width, height;
-
 	void Play(unsigned char* buf);
 
-private:
-	std::mutex colorMutex; //彩色图像输出互斥锁
+	int width, height;
 	cv::Mat colorBuf; //彩色流
+	mutable std::shared_mutex colorMutex;
+
+private:
+	
 };
