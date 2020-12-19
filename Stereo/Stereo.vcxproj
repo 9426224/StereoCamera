@@ -78,8 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)opencv\include;$(SolutionDir)eSPDI_DM\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)eSPDI_DM\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -123,7 +123,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>eSPDI_DM.lib;opencv_world310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -161,6 +161,8 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets" Condition="Exists('..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets')" />
     <Import Project="..\packages\OpenCv.3.1.0\build\native\OpenCv.targets" Condition="Exists('..\packages\OpenCv.3.1.0\build\native\OpenCv.targets')" />
+    <Import Project="..\packages\LenaCV.redist.1.2.4.44\build\native\LenaCV.redist.targets" Condition="Exists('..\packages\LenaCV.redist.1.2.4.44\build\native\LenaCV.redist.targets')" />
+    <Import Project="..\packages\LenaCV.1.2.4.44\build\native\LenaCV.targets" Condition="Exists('..\packages\LenaCV.1.2.4.44\build\native\LenaCV.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -168,5 +170,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets'))" />
     <Error Condition="!Exists('..\packages\OpenCv.3.1.0\build\native\OpenCv.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCv.3.1.0\build\native\OpenCv.targets'))" />
+    <Error Condition="!Exists('..\packages\LenaCV.redist.1.2.4.44\build\native\LenaCV.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LenaCV.redist.1.2.4.44\build\native\LenaCV.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\LenaCV.1.2.4.44\build\native\LenaCV.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LenaCV.1.2.4.44\build\native\LenaCV.targets'))" />
   </Target>
 </Project>
