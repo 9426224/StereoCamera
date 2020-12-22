@@ -70,17 +70,23 @@ void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
 		pD = pDL;
 		for (int j = 0; j < width; j++)
 		{
-			if (pWS[j] < 20 || pWS[j]> 1600)
+			if(false)
+			//if (pWS[j] < 100 || pWS[j]> 1800)
 			{
 				pD[0] = 0;//B
 				pD[1] = 0;//G
 				pD[2] = 0;//R
 			}
 			else
+			//{
+			//	pD[0] = pWS[j] / 8;//B
+			//	pD[1] = pWS[j] / 8;//G
+			//	pD[2] = pWS[j] / 8;//R
+			//}
 			{
-				pD[0] = pWS[j] / 8;//B
-				pD[1] = pWS[j] / 8;//G
-				pD[2] = pWS[j] / 8;//R
+				pD[0] = 255 - pWS[j] / 8;//B
+				pD[1] = 255 - pWS[j] / 8;//G
+				pD[2] = 255- -pWS[j] / 8;//R
 			}
 			pD += 3;
 		}

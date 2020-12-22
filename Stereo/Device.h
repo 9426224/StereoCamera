@@ -11,8 +11,8 @@ public:
 	~Device();
 
 	//可修改的参数
-	int depthResolution = 0; // 深度分辨率 0-> 1280*720  1-> 640*480 -1-> No
-	int colorResolution = 0; //YUV: 0：1280 * 720, 1:2560 * 720, 2 : 2560 * 960, 3 : 1280 * 480, 4 : 640 * 480, 5 : 1280 * 720MJPG, 6 : 2560 * 720MJPG, 7 : 2560 * 960MJPG
+	int depthResolution = -1; // 深度分辨率 0-> 1280*720  1-> 640*480 -1-> No
+	int colorResolution = 2; //YUV: 0：1280 * 720, 1:2560 * 720, 2 : 2560 * 960, 3 : 1280 * 480, 4 : 640 * 480, 5 : 1280 * 720MJPG, 6 : 2560 * 720MJPG, 7 : 2560 * 960MJPG
 	int depthOption = 11; // 11-> 11bit视差图  14-> 14bit深度图 /*8-> 8bit视差图*/  USB2.0下：8bit视差图
 	
 	
