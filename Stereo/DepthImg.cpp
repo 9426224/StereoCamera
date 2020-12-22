@@ -61,7 +61,11 @@ void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
 	pWSL = (unsigned short*)buf;
 	pDL = pDepthBuf;
 
-	int min = 99999, max = 0;
+	int maxDistance = 100000, minDistance=1000;
+
+
+
+	int minLength = 1282103/minDistance, maxLength = 1282103/maxDistance;
 
 	for (int i = 0; i < height; i++)
 	{
@@ -69,41 +73,25 @@ void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
 		pD = pDL;
 		for (int j = 0; j < width; j++)
 		{
-			if(false)
-			//if (pWS[j] < 100 || pWS[j]> 1800)
+			if (pWS[j] < maxLength || pWS[j]> minLength)
 			{
 				pD[0] = 0;//B
 				pD[1] = 0;//G
 				pD[2] = 0;//R
 			}
 			else
-			//{
-			//	pD[0] = pWS[j] / 8;//B
-			//	pD[1] = pWS[j] / 8;//G
-			//	pD[2] = pWS[j] / 8;//R
-			//}
 			{
-				//pD[0] = 255 - pWS[j] / 8;//B
-				//pD[1] = 255 - pWS[j] / 8;//G
-				//pD[2] = 255- -pWS[j] / 8;//R
-				pD[0] = 1282103.2224 / pWS[j];
-				pD[1] = 1282103.2224 / pWS[j];
-				pD[2] = 1282103.2224 / pWS[j];
-
-				if (pD[0] < min)
-				{
-					min = pD[0];
-				}
-				if (pD[0] > max)
-				{
-					max = pD[0];
-				}
+				pD[0] = (pWS[j] - maxLength) * 255 / (minLength- maxLength);//B
+				pD[1] = (pWS[j] - maxLength) * 255 / (minLength - maxLength);//G
+				pD[2] = (pWS[j] - maxLength) * 255 / (minLength - maxLength);//R
 			}
 			pD += 3;
 		}
 		pWSL += width;
 		pDL += nBPS;
 	}
+
+	int k = 1;
 	return;
 }
 

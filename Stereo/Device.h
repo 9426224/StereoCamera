@@ -11,7 +11,7 @@ public:
 	~Device();
 
 	//Parameters which can be changed in there.
-	int depthResolution = 1; // Depth Resolution 0-> 1280*720  1-> 640*480 -1-> No
+	int depthResolution = 0; // Depth Resolution 0-> 1280*720  1-> 640*480 -1-> No
 	int colorResolution = 0; //Color Resolution YUV: 0£º1280 * 720, 1:2560 * 720, 2 : 2560 * 960, 3 : 1280 * 480, 4 : 640 * 480, 5 : 1280 * 720MJPG, 6 : 2560 * 720MJPG, 7 : 2560 * 960MJPG
 	int depthOption = 11; // 11-> 11bit parollex image  14-> 14bit depth image /*8-> 8bit parollex image*/  USB2.0:8bit parollex image
 	
