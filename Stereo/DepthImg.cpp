@@ -61,6 +61,8 @@ void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
 	pWSL = (unsigned short*)buf;
 	pDL = pDepthBuf;
 
+	int min = 99999, max = 0;
+
 	for (int i = 0; i < height; i++)
 	{
 		pWS = pWSL;
@@ -81,16 +83,28 @@ void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
 			//	pD[2] = pWS[j] / 8;//R
 			//}
 			{
-				pD[0] = 255 - pWS[j] / 8;//B
-				pD[1] = 255 - pWS[j] / 8;//G
-				pD[2] = 255- -pWS[j] / 8;//R
+				//pD[0] = 255 - pWS[j] / 8;//B
+				//pD[1] = 255 - pWS[j] / 8;//G
+				//pD[2] = 255- -pWS[j] / 8;//R
+				pD[0] = 1282103.2224 / pWS[j];
+				pD[1] = 1282103.2224 / pWS[j];
+				pD[2] = 1282103.2224 / pWS[j];
+
+				if (pD[0] < min)
+				{
+					min = pD[0];
+				}
+				if (pD[0] > max)
+				{
+					max = pD[0];
+				}
 			}
 			pD += 3;
 		}
 		pWSL += width;
 		pDL += nBPS;
 	}
-
+	return;
 }
 
 void DepthImg::BufferZ14ConvertToGray(unsigned char* buf)

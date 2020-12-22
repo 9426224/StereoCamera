@@ -16,9 +16,9 @@ Mat DistCoeffLeft = (Mat_<double>(5, 1) << 0.342488487687882, -5.69546388395641,
 Mat DistCoeffRight = (Mat_<double>(5, 1) << -0.230393310199259, 3.249681340745177, -0.027724938776735, 0.02396859739654, -21.708868924258418);
 Mat Transcation = (Mat_<double>(3, 1) << -394.7730882974745, 4.033315779561094, -95.74162655063917);
 Mat Rotation = (Mat_<double>(3, 3) << 0.989025767924407, 0.005703614198638, 0.14763298807045, -0.003428051080464, 0.999871443268512, -0.015663505416523, -0.147703347447938, 0.014985517048698, 0.988918174285141);
-Mat Rl, Rr, Pl, Pr, Q;
+Mat Rl, Rr, Pl, Pr, Q; 
 Mat mapLx, mapLy, mapRx, mapRy;//映射表
-//Rect validROIL, validROIR; //图像裁剪之后的区域
+Rect validROIL, validROIR; //图像裁剪之后的区域
 Size imageSize; //图像尺寸
 #pragma endregion
 
@@ -66,15 +66,12 @@ int main()
 		depthImg->Init();
 	}
 
-
-	
-
-
 	int mindisparity = 0;
 	int ndisparities = 64;
 	int SADWindowsSize = 11;
 	Ptr<StereoSGBM> sgbm = StereoSGBM::create(mindisparity, ndisparities, SADWindowsSize);
 
+	// 预处理一次图像，得出后续处理参数
 	while (true)
 	{
 		Mat color;
@@ -91,23 +88,18 @@ int main()
 
 			imageSize = Size(left.cols, left.rows);
 
-			//畸变矫正
-			stereoRectify(MatrixLeft, DistCoeffLeft, MatrixRight, DistCoeffRight, imageSize, Rotation, Transcation, Rl, Rr, Pl, Pr, Q, CALIB_ZERO_DISPARITY, -1, imageSize, Rect* validROIL, &validROIR);
+			//畸变系数计算
+			//stereoRectify(MatrixLeft, DistCoeffLeft, MatrixRight, DistCoeffRight, imageSize, Rotation, Transcation, Rl, Rr, Pl, Pr, Q, CALIB_ZERO_DISPARITY, -1, imageSize, &validROIL, &validROIR);
 
 			//对极线矫正
-			initUndistortRectifyMap(MatrixLeft, DistCoeffLeft, Rl, Pl, imageSize, CV_16SC2, mapLx, mapLy);
-			initUndistortRectifyMap(MatrixRight, DistCoeffRight, Rr, Pr, imageSize, CV_16SC2, mapRx, mapRy);
+			//initUndistortRectifyMap(MatrixLeft, DistCoeffLeft, Rl, Pl, imageSize, CV_16SC2, mapLx, mapLy);
+			//initUndistortRectifyMap(MatrixRight, DistCoeffRight, Rr, Pr, imageSize, CV_16SC2, mapRx, mapRy);
 
 			//SGBM参数设置
 			int numberOfDisparities = ((imageSize.width / 8) + 15) & -16;
 			int SADWindowSize = 9;
 			int sgbmWinSize = SADWindowSize > 0 ? SADWindowSize : 3;
 			int cn = left.channels();
-
-
-
-
-
 			//sgbm->setPreFilterCap(15); //预处理滤波器的截断值 [1-63]
 			//sgbm->setBlockSize(sgbmWinSize);
 			//sgbm->setP1(8 * cn * sgbmWinSize * sgbmWinSize);// 控制视察变化平滑性的参数，P1/P2值越大，视差越平滑，P2必须大于P1
@@ -121,6 +113,7 @@ int main()
 			////sgbm->setMode(cv::StereoSGBM::MODE_HH);
 			////sgbm->setMode(cv::StereoSGBM::MODE_SGBM);
 			////sgbm->setMode(cv::StereoSGBM::MODE_SGBM_3WAY);
+
 			break;
 		}
 	}
@@ -138,14 +131,13 @@ int main()
 			/* 彩色图像处理 */
 			//cvtColor(color, color, COLOR_BGR2GRAY); //彩色图像转为灰度图像
 
-			//cvtColor(color, color, COLOR_BGR2RGB);
-
 			//GaussianBlur(color, color, Size(5, 5), 0, 0); //高斯滤波
 
 			//threshold(color, color, 0, 255, THRESH_OTSU);
 
 			//Canny(color, color, 50, 500, 3); //Canny算子边缘检测
 
+			//边缘点集查找
 			//std::vector<std::vector<Point>> contours;
 			//std::vector<Vec4i> hierarchy;
 			//findContours(color, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
@@ -153,34 +145,27 @@ int main()
 			
 			//图像分割成左右两部分
 			Mat left = color(Rect(0, 0, color.cols / 2, color.rows));
-
 			Mat right = color(Rect(color.cols/2, 0, color.cols / 2, color.rows));
 
-			Mat disp;
+			Mat disp, leftnew, rightnew;
 
-			Mat leftnew, rightnew;
-
-			remap(left, leftnew, mapLx, mapLy, INTER_LINEAR);
-			remap(right, rightnew, mapRx, mapRy, INTER_LINEAR);
-			left = leftnew;
-			right = rightnew;
-
+			//remap图像为正确对极线位置
+			//remap(left, leftnew, mapLx, mapLy, INTER_LINEAR);
+			//remap(right, rightnew, mapRx, mapRy, INTER_LINEAR);
+			//left = leftnew;
+			//right = rightnew;
 			
+			//SGBM处理图像
 			//sgbm->compute(left, right, disp);
-
 			//imshow("disp", disp);
-
 			//disp.convertTo(disp, CV_32F, 1.0 / 16);
-
 			//Mat disp8U = Mat(disp.rows, disp.cols, CV_8UC1);
-
 			//normalize(disp, disp8U, 0, 255, NORM_MINMAX, CV_8UC1);
-
 			//imshow("parallex",disp8U);
 
 
-			imshow("left", left);
-			imshow("right", right);
+			//imshow("left", left);
+			//imshow("right", right);
 
 		}
 		if (device.depthResolution != -1 && depthImg->depthBuf.rows != 0) 
