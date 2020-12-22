@@ -16,6 +16,10 @@ Mat DistCoeffLeft = (Mat_<double>(5, 1) << 0.342488487687882, -5.69546388395641,
 Mat DistCoeffRight = (Mat_<double>(5, 1) << -0.230393310199259, 3.249681340745177, -0.027724938776735, 0.02396859739654, -21.708868924258418);
 Mat Transcation = (Mat_<double>(3, 1) << -394.7730882974745, 4.033315779561094, -95.74162655063917);
 Mat Rotation = (Mat_<double>(3, 3) << 0.989025767924407, 0.005703614198638, 0.14763298807045, -0.003428051080464, 0.999871443268512, -0.015663505416523, -0.147703347447938, 0.014985517048698, 0.988918174285141);
+Mat Rl, Rr, Pl, Pr, Q;
+Mat mapLx, mapLy, mapRx, mapRy;//映射表
+//Rect validROIL, validROIR; //图像裁剪之后的区域
+Size imageSize; //图像尺寸
 #pragma endregion
 
 /// <summary>
@@ -63,15 +67,13 @@ int main()
 	}
 
 
-	Mat Rl, Rr, Pl, Pr, Q;
+	
 
-	Mat mapLx, mapLy, mapRx, mapRy;//映射表
 
-	Rect validROIL, validROIR; //图像裁剪之后的区域
-
-	Size imageSize; //图像尺寸
-
-	Ptr<StereoSGBM> sgbm = StereoSGBM::create(0, 16, 3);
+	int mindisparity = 0;
+	int ndisparities = 64;
+	int SADWindowsSize = 11;
+	Ptr<StereoSGBM> sgbm = StereoSGBM::create(mindisparity, ndisparities, SADWindowsSize);
 
 	while (true)
 	{
@@ -90,7 +92,7 @@ int main()
 			imageSize = Size(left.cols, left.rows);
 
 			//畸变矫正
-			stereoRectify(MatrixLeft, DistCoeffLeft, MatrixRight, DistCoeffRight, imageSize, Rotation, Transcation, Rl, Rr, Pl, Pr, Q, CALIB_ZERO_DISPARITY, 0, imageSize, &validROIL, &validROIR);
+			stereoRectify(MatrixLeft, DistCoeffLeft, MatrixRight, DistCoeffRight, imageSize, Rotation, Transcation, Rl, Rr, Pl, Pr, Q, CALIB_ZERO_DISPARITY, -1, imageSize, Rect* validROIL, &validROIR);
 
 			//对极线矫正
 			initUndistortRectifyMap(MatrixLeft, DistCoeffLeft, Rl, Pl, imageSize, CV_16SC2, mapLx, mapLy);
@@ -98,22 +100,27 @@ int main()
 
 			//SGBM参数设置
 			int numberOfDisparities = ((imageSize.width / 8) + 15) & -16;
-			sgbm->setPreFilterCap(32);
 			int SADWindowSize = 9;
 			int sgbmWinSize = SADWindowSize > 0 ? SADWindowSize : 3;
-			sgbm->setBlockSize(sgbmWinSize);
 			int cn = left.channels();
-			sgbm->setP1(8 * cn * sgbmWinSize * sgbmWinSize);
-			sgbm->setP2(32 * cn * sgbmWinSize * sgbmWinSize);
-			sgbm->setMinDisparity(0);
-			sgbm->setNumDisparities(numberOfDisparities);
-			sgbm->setUniquenessRatio(10);
-			sgbm->setSpeckleWindowSize(100);
-			sgbm->setSpeckleRange(32);
-			sgbm->setDisp12MaxDiff(1);
-			//sgbm->setMode(cv::StereoSGBM::MODE_HH);
-			sgbm->setMode(cv::StereoSGBM::MODE_SGBM);
-			//sgbm->setMode(cv::StereoSGBM::MODE_SGBM_3WAY);
+
+
+
+
+
+			//sgbm->setPreFilterCap(15); //预处理滤波器的截断值 [1-63]
+			//sgbm->setBlockSize(sgbmWinSize);
+			//sgbm->setP1(8 * cn * sgbmWinSize * sgbmWinSize);// 控制视察变化平滑性的参数，P1/P2值越大，视差越平滑，P2必须大于P1
+			//sgbm->setP2(32 * cn * sgbmWinSize * sgbmWinSize);//P1是相邻像素点视差增/减1的惩罚系数，P2是相邻像素点视差变化值大于1时的惩罚系数
+			//sgbm->setMinDisparity(0);//最小视差值，代表了匹配搜索从哪里开始
+			//sgbm->setNumDisparities(numberOfDisparities);//表示最大搜索视差数
+			//sgbm->setUniquenessRatio(6);//表示匹配功能函数
+			//sgbm->setSpeckleWindowSize(100);//检查视差连通域，变化度的窗口大小
+			//sgbm->setSpeckleRange(2);//视差变化阈值，当窗口内视差的变化大于阈值时，该窗口内的视差清零
+			//sgbm->setDisp12MaxDiff(1);//1
+			////sgbm->setMode(cv::StereoSGBM::MODE_HH);
+			////sgbm->setMode(cv::StereoSGBM::MODE_SGBM);
+			////sgbm->setMode(cv::StereoSGBM::MODE_SGBM_3WAY);
 			break;
 		}
 	}
@@ -130,6 +137,8 @@ int main()
 
 			/* 彩色图像处理 */
 			//cvtColor(color, color, COLOR_BGR2GRAY); //彩色图像转为灰度图像
+
+			//cvtColor(color, color, COLOR_BGR2RGB);
 
 			//GaussianBlur(color, color, Size(5, 5), 0, 0); //高斯滤波
 
@@ -149,19 +158,29 @@ int main()
 
 			Mat disp;
 
-			remap(left, left, mapLx, mapLy, INTER_LINEAR); 
-			remap(right, right, mapRx, mapRy, INTER_LINEAR);
+			Mat leftnew, rightnew;
+
+			remap(left, leftnew, mapLx, mapLy, INTER_LINEAR);
+			remap(right, rightnew, mapRx, mapRy, INTER_LINEAR);
+			left = leftnew;
+			right = rightnew;
 
 			
-			sgbm->compute(left, right, disp);
+			//sgbm->compute(left, right, disp);
 
-			imshow("parallex",disp);
+			//imshow("disp", disp);
 
-			/*namedWindow("left", 0);
-			namedWindow("right", 0);
+			//disp.convertTo(disp, CV_32F, 1.0 / 16);
+
+			//Mat disp8U = Mat(disp.rows, disp.cols, CV_8UC1);
+
+			//normalize(disp, disp8U, 0, 255, NORM_MINMAX, CV_8UC1);
+
+			//imshow("parallex",disp8U);
+
 
 			imshow("left", left);
-			imshow("right", right);*/
+			imshow("right", right);
 
 		}
 		if (device.depthResolution != -1 && depthImg->depthBuf.rows != 0) 
