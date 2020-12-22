@@ -1,15 +1,12 @@
 #include "DepthImg.h"
 
-/// <summary>
-/// 析构函数
-/// </summary>
 DepthImg::~DepthImg()
 {
 
 }
 
 /// <summary>
-/// 深度图像暂存变量创建
+/// Create depth temporary buffer.
 /// </summary>
 void DepthImg::Init()
 {
@@ -24,9 +21,9 @@ void DepthImg::Init()
 }
 
 /// <summary>
-/// 读取视差图或深度距离图
+/// Read parollax or depth images.
 /// </summary>
-/// <param name="buf">深度图像流</param>
+/// <param name="buf">Return buffer from callback function.</param>
 void DepthImg::Play(unsigned char* buf)
 {
 	if (type == 8)
