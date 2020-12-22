@@ -3,6 +3,9 @@
 #include "Device.h"
 #include "DepthImg.h"
 #include "ColorImg.h"
+#include "cvui.h"
+
+#define WINDOW_NAME "Depth"
 
 using namespace cv;
 
@@ -96,10 +99,10 @@ int main()
 			//initUndistortRectifyMap(MatrixRight, DistCoeffRight, Rr, Pr, imageSize, CV_16SC2, mapRx, mapRy);
 
 			//SGBM参数设置
-			int numberOfDisparities = ((imageSize.width / 8) + 15) & -16;
-			int SADWindowSize = 9;
-			int sgbmWinSize = SADWindowSize > 0 ? SADWindowSize : 3;
-			int cn = left.channels();
+			//int numberOfDisparities = ((imageSize.width / 8) + 15) & -16;
+			//int SADWindowSize = 9;
+			//int sgbmWinSize = SADWindowSize > 0 ? SADWindowSize : 3;
+			//int cn = left.channels();
 			//sgbm->setPreFilterCap(15); //预处理滤波器的截断值 [1-63]
 			//sgbm->setBlockSize(sgbmWinSize);
 			//sgbm->setP1(8 * cn * sgbmWinSize * sgbmWinSize);// 控制视察变化平滑性的参数，P1/P2值越大，视差越平滑，P2必须大于P1
@@ -118,7 +121,10 @@ int main()
 		}
 	}
 
-	while (true)
+	namedWindow(WINDOW_NAME);
+	cvui::init(WINDOW_NAME);
+
+	while (waitKey(1) != 27)
 	{
 		Mat color, depth;
 		if (colorImg->colorBuf.rows != 0)
@@ -142,10 +148,10 @@ int main()
 			//std::vector<Vec4i> hierarchy;
 			//findContours(color, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 			//drawContours(depth, contours, -1, (0, 0, 255), 3);
-			
+
 			//图像分割成左右两部分
 			Mat left = color(Rect(0, 0, color.cols / 2, color.rows));
-			Mat right = color(Rect(color.cols/2, 0, color.cols / 2, color.rows));
+			Mat right = color(Rect(color.cols / 2, 0, color.cols / 2, color.rows));
 
 			Mat disp, leftnew, rightnew;
 
@@ -154,7 +160,7 @@ int main()
 			//remap(right, rightnew, mapRx, mapRy, INTER_LINEAR);
 			//left = leftnew;
 			//right = rightnew;
-			
+
 			//SGBM处理图像
 			//sgbm->compute(left, right, disp);
 			//imshow("disp", disp);
@@ -168,7 +174,7 @@ int main()
 			//imshow("right", right);
 
 		}
-		if (device.depthResolution != -1 && depthImg->depthBuf.rows != 0) 
+		if (device.depthResolution != -1 && depthImg->depthBuf.rows != 0)
 		{
 			{
 				std::shared_lock<std::shared_mutex> lockColor(depthImg->depthMutex);
@@ -179,14 +185,17 @@ int main()
 
 			//GaussianBlur(depth, depth, Size(5, 5), 0, 0); //高斯滤波
 
-			medianBlur(depth, depth, 5); //中值滤波
+			//medianBlur(depth, depth, 5); //中值滤波
 
 			//threshold(depth, depth, 0, 255, THRESH_OTSU); //大津法 二值化阈值处理
 
-			imshow("depth", depth);
-		}
+			cvui::window(depth, 900, 100, 180, 180, "Settings");
+			cvui::trackbar(depth, 915, 130, 165, &depthImg->maxDistance, 500, 120000);
+			cvui::trackbar(depth, 960, 130, 165, &depthImg->minDistance, 500, 120000);
+			cvui::update();
 
-		waitKey(1);
+			imshow(WINDOW_NAME, depth);
+		}
 	}
 
 	return 0;

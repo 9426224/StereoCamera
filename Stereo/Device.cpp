@@ -16,7 +16,7 @@ bool Device::Init()
 		return false;
 	}
 
-	for (size_t i = 0; i < devInfo.size(); i++) //LenaCVÉè±¸µÄ¶ÔÓ¦±àºÅ²éÕÒ
+	for (size_t i = 0; i < devInfo.size(); i++) //LenaCVï¿½è±¸ï¿½Ä¶ï¿½Ó¦ï¿½ï¿½Å²ï¿½ï¿½ï¿½
 	{
 		if (strcmp(devInfo[i].strDevName, "Lena3d:vid_0211 pid_5838") == 0)
 		{
@@ -24,7 +24,7 @@ bool Device::Init()
 		}
 	}
 
-	LenaDDI_Init2(&pHandleLenaDDI, false, true); //Éè±¸³õÊ¼»¯
+	LenaDDI_Init2(&pHandleLenaDDI, false, true); //ï¿½è±¸ï¿½ï¿½Ê¼ï¿½ï¿½
 	
 	LenaDDI_GetDeviceResolutionList(pHandleLenaDDI, &pDevSelInfo, LenaDDI_MAX_STREAM_COUNT, pStreamColorInfo, LenaDDI_MAX_STREAM_COUNT, pStreamDepthInfo);
 

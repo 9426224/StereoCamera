@@ -61,11 +61,7 @@ void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
 	pWSL = (unsigned short*)buf;
 	pDL = pDepthBuf;
 
-	int maxDistance = 100000, minDistance=1000;
-
-
-
-	int minLength = 1282103/minDistance, maxLength = 1282103/maxDistance;
+	int minLength = fxAndBaseLine / minDistance, maxLength = fxAndBaseLine / maxDistance;
 
 	for (int i = 0; i < height; i++)
 	{
