@@ -10,9 +10,10 @@ public:
 
 	void Init();
 	void Play(unsigned char *buf);
+	cv::Mat QuickDomainAnalysis(cv::Mat depth);
 
-	int maxDistance = 120000, minDistance = 500;
-	int fxAndBaseLine = 1282103;
+	int maxDistance = 40000, minDistance = 5000;
+	int fxAndBaseLine = 12821030;
 	int width, height, type;
 	cv::Mat depthBuf; //Depth Buffer
 	mutable std::shared_mutex depthMutex;

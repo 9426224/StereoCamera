@@ -1,9 +1,11 @@
-﻿#include <thread>
+﻿#define CVUI_IMPLEMENTATION
+#include "cvui.h"
+
+#include <thread>
 
 #include "Device.h"
 #include "DepthImg.h"
 #include "ColorImg.h"
-#include "cvui.h"
 
 #define WINDOW_NAME "Depth"
 
@@ -52,6 +54,8 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 	}
 }
 
+
+
 int main()
 {
 	Device device;
@@ -75,7 +79,7 @@ int main()
 	Ptr<StereoSGBM> sgbm = StereoSGBM::create(mindisparity, ndisparities, SADWindowsSize);
 
 	// 预处理一次图像，得出后续处理参数
-	while (true)
+	while (false)
 	{
 		Mat color;
 		if (colorImg->colorBuf.rows != 0)
@@ -121,6 +125,8 @@ int main()
 		}
 	}
 
+	int k = 1;
+
 	namedWindow(WINDOW_NAME);
 	cvui::init(WINDOW_NAME);
 
@@ -150,10 +156,10 @@ int main()
 			//drawContours(depth, contours, -1, (0, 0, 255), 3);
 
 			//图像分割成左右两部分
-			Mat left = color(Rect(0, 0, color.cols / 2, color.rows));
-			Mat right = color(Rect(color.cols / 2, 0, color.cols / 2, color.rows));
+			//Mat left = color(Rect(0, 0, color.cols / 2, color.rows));
+			//Mat right = color(Rect(color.cols / 2, 0, color.cols / 2, color.rows));
 
-			Mat disp, leftnew, rightnew;
+			//Mat disp, leftnew, rightnew;
 
 			//remap图像为正确对极线位置
 			//remap(left, leftnew, mapLx, mapLy, INTER_LINEAR);
@@ -185,16 +191,28 @@ int main()
 
 			//GaussianBlur(depth, depth, Size(5, 5), 0, 0); //高斯滤波
 
-			//medianBlur(depth, depth, 5); //中值滤波
+			medianBlur(depth, depth, 5); //中值滤波
 
-			//threshold(depth, depth, 0, 255, THRESH_OTSU); //大津法 二值化阈值处理
+			//blur(depth, depth, Size(3, 3), Point(-1, -1), 4);
 
-			cvui::window(depth, 900, 100, 180, 180, "Settings");
-			cvui::trackbar(depth, 915, 130, 165, &depthImg->maxDistance, 500, 120000);
-			cvui::trackbar(depth, 960, 130, 165, &depthImg->minDistance, 500, 120000);
+			//快速连通域分析
+			//depth = depthImg->QuickDomainAnalysis(depth);
+
+			//可调节远近距离，单位mm
+			cvui::window(depth, 900, 100, 300, 130, "Settings");
+			cvui::trackbar(depth, 915, 130, 270, &depthImg->maxDistance, 11000, 120000);
+			cvui::trackbar(depth, 915, 170, 270, &depthImg->minDistance, 5000, 10000);
 			cvui::update();
 
 			imshow(WINDOW_NAME, depth);
+
+			int key = waitKey(1);
+			if (key == 's')
+			{
+				String str = "Depth" + std::to_string(k) + ".jpg";
+				imwrite(str, depth);
+				k++;
+			}
 		}
 	}
 

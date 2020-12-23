@@ -77,9 +77,9 @@ void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
 			}
 			else
 			{
-				pD[0] = (pWS[j] - maxLength) * 255 / (minLength- maxLength);//B
-				pD[1] = (pWS[j] - maxLength) * 255 / (minLength - maxLength);//G
-				pD[2] = (pWS[j] - maxLength) * 255 / (minLength - maxLength);//R
+				pD[0] =255- (pWS[j] - maxLength) * 255 / (minLength- maxLength);//B
+				pD[1] =255- (pWS[j] - maxLength) * 255 / (minLength - maxLength);//G
+				pD[2] =255- (pWS[j] - maxLength) * 255 / (minLength - maxLength);//R
 			}
 			pD += 3;
 		}
@@ -115,4 +115,35 @@ void DepthImg::BufferZ14ConvertToGray(unsigned char* buf)
 		pWSL += width;
 		pDL += nBPS;
 	}
+}
+
+cv::Mat DepthImg::QuickDomainAnalysis(cv::Mat depth)
+{
+	//快速连通域分析
+	cv::Mat depth_thresh, depth_label, stats, centroids;
+
+	cv::threshold(depth, depth_thresh, 0, 255, cv::THRESH_BINARY); //二值化阈值处理 大于0则置为255
+
+	int nccomps = connectedComponentsWithStats(depth_thresh, depth_label, stats, centroids);
+
+	std::vector<uchar> colors(nccomps);
+
+	for (int i = 1; i < nccomps; i++)
+	{
+		colors[i] = stats.at<int>(i, cv::CC_STAT_AREA) < 300 ? 0 : 1;
+	}
+
+	for (int y = 0; y < depth_thresh.rows; y++)
+	{
+		for (int x = 0; x < depth_thresh.cols; x++)
+		{
+			int label = depth_label.at<int>(y, x);
+			CV_Assert(0 <= label && label <= nccomps);
+			depth_thresh.at<uchar>(y, x) = colors[label];
+		}
+	}
+
+	depth = depth.mul(depth_thresh);
+
+	return depth;
 }

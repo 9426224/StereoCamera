@@ -41,8 +41,5 @@
     <ClInclude Include="ColorImg.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="cvui.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
