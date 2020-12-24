@@ -74,12 +74,14 @@ void DepthImg::BufferD11ConvertToGray(unsigned char* buf)
 				pD[0] = 0;//B
 				pD[1] = 0;//G
 				pD[2] = 0;//R
+				depthSource.at<int>(i,j) = 0;
 			}
 			else
 			{
 				pD[0] =255- (pWS[j] - maxLength) * 255 / (minLength- maxLength);//B
 				pD[1] =255- (pWS[j] - maxLength) * 255 / (minLength - maxLength);//G
 				pD[2] =255- (pWS[j] - maxLength) * 255 / (minLength - maxLength);//R
+				depthSource.at<ushort>(i, j) = fxAndBaseLine / pWS[j];
 			}
 			pD += 3;
 		}
@@ -145,5 +147,25 @@ cv::Mat DepthImg::QuickDomainAnalysis(cv::Mat depth)
 
 	depth = depth.mul(depth_thresh);
 
+	return depth;
+}
+
+cv::Mat DepthImg::SplitWater(cv::Mat depth)
+{
+	float height = 500; //表示摄像头距离水面的高度,单位mm
+	float nearestWater = 6.3138 * height; //最低像素区域距离船只的实际距离
+	float farthestWater = 40000; //最远像素区域距离船只的实际距离
+	float distancePerPixel = (farthestWater - nearestWater) / 360; //单位像素代表的距离
+
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			if (distancePerPixel * i + nearestWater > depth.at<ushort>(j, i))
+			{
+				depth.at<ushort>(j, i) = 0;
+			}
+		}
+	}
 	return depth;
 }

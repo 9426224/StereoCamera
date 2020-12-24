@@ -5,17 +5,21 @@
 
 class DepthImg {
 public:
-	DepthImg(int width,int height,int type): width(width), height(height), type(type) {}
+	DepthImg(int width,int height,int type): width(width), height(height), type(type) 
+	{
+		depthSource = cv::Mat(width, height, CV_16UC1);
+	}
 	~DepthImg();
 
 	void Init();
 	void Play(unsigned char *buf);
 	cv::Mat QuickDomainAnalysis(cv::Mat depth);
+	cv::Mat SplitWater(cv::Mat depth);
 
 	int maxDistance = 40000, minDistance = 5000;
 	int fxAndBaseLine = 12821030;
 	int width, height, type;
-	cv::Mat depthBuf; //Depth Buffer
+	cv::Mat depthBuf,depthSource; //Depth Buffer
 	mutable std::shared_mutex depthMutex;
 
 private:

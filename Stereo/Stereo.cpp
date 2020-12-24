@@ -198,6 +198,8 @@ int main()
 			//快速连通域分析
 			//depth = depthImg->QuickDomainAnalysis(depth);
 
+			depthImg->SplitWater(depth);
+
 			//可调节远近距离，单位mm
 			cvui::window(depth, 900, 100, 300, 130, "Settings");
 			cvui::trackbar(depth, 915, 130, 270, &depthImg->maxDistance, 11000, 120000);
