@@ -6,7 +6,6 @@
 class ColorImg {
 public:
 	ColorImg(int width, int height) : width(width), height(height) {}
-	~ColorImg();
 
 	void Play(unsigned char* buf);
 

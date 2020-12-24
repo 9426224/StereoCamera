@@ -70,7 +70,6 @@ int main()
 		depthImg = new DepthImg(device.pStreamDepthInfo[device.depthResolution].nWidth,
 			device.pStreamDepthInfo[device.depthResolution].nHeight,
 			device.USBType ? device.depthOption : 8);
-		depthImg->Init();
 	}
 
 	int mindisparity = 0;
@@ -125,14 +124,12 @@ int main()
 		}
 	}
 
-	int k = 1;
-
 	namedWindow(WINDOW_NAME);
 	cvui::init(WINDOW_NAME);
 
 	while (waitKey(1) != 27)
 	{
-		Mat color, depth;
+		Mat color, depth, depthSource;
 		if (colorImg->colorBuf.rows != 0)
 		{
 			{
@@ -180,41 +177,39 @@ int main()
 			//imshow("right", right);
 
 		}
-		if (device.depthResolution != -1 && depthImg->depthBuf.rows != 0)
+		if (depthImg->depthBuf.rows != 0)
 		{
 			{
 				std::shared_lock<std::shared_mutex> lockColor(depthImg->depthMutex);
 				depth = depthImg->depthBuf;
+				depthSource = depthImg->depthSource;
 			}
 			/* 深度图像处理 */
 			cvtColor(depth, depth, COLOR_BGR2GRAY); //三通道灰度图转单通道灰度图,为后续计算做准备
+			cvtColor(depthSource, depthSource, COLOR_BGR2GRAY);
 
 			//GaussianBlur(depth, depth, Size(5, 5), 0, 0); //高斯滤波
 
-			medianBlur(depth, depth, 5); //中值滤波
+			//medianBlur(depth, depth, 5); //中值滤波
 
 			//blur(depth, depth, Size(3, 3), Point(-1, -1), 4);
 
 			//快速连通域分析
 			//depth = depthImg->QuickDomainAnalysis(depth);
 
-			depthImg->SplitWater(depth);
+			depthImg->SplitWater(depthSource);
 
 			//可调节远近距离，单位mm
-			cvui::window(depth, 900, 100, 300, 130, "Settings");
-			cvui::trackbar(depth, 915, 130, 270, &depthImg->maxDistance, 11000, 120000);
-			cvui::trackbar(depth, 915, 170, 270, &depthImg->minDistance, 5000, 10000);
+			cvui::window(depthSource, 900, 300, 200, 400, "Settings");
+			cvui::trackbar(depthSource, 915, 130, 270, &depthImg->minDistance, 600, 10000);
+			cvui::trackbar(depthSource, 915, 170, 270, &depthImg->maxDistance, 11000, 50000);
+			
+			cvui::trackbar(depthSource, 915, 210, 270, &depthImg->h, 100, 3000);
+			cvui::trackbar(depthSource, 915, 250, 270, &depthImg->farthestWater, 1000, 50000);
+			cvui::trackbar(depthSource, 915, 290, 270, &depthImg->pixel, 0, 720);
 			cvui::update();
 
-			imshow(WINDOW_NAME, depth);
-
-			int key = waitKey(1);
-			if (key == 's')
-			{
-				String str = "Depth" + std::to_string(k) + ".jpg";
-				imwrite(str, depth);
-				k++;
-			}
+			imshow(WINDOW_NAME, depthSource);
 		}
 	}
 

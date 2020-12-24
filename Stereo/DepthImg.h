@@ -7,24 +7,28 @@ class DepthImg {
 public:
 	DepthImg(int width,int height,int type): width(width), height(height), type(type) 
 	{
-		depthSource = cv::Mat(width, height, CV_16UC1);
+		pDepthBuf = (unsigned char*)realloc(pDepthBuf, sizeof(unsigned char) * width * height *3);
+		pDepthSource = (unsigned short*)realloc(pDepthSource, sizeof(unsigned short) * width * height * 3);
 	}
-	~DepthImg();
 
-	void Init();
-	void Play(unsigned char *buf);
-	cv::Mat QuickDomainAnalysis(cv::Mat depth);
-	cv::Mat SplitWater(cv::Mat depth);
+	void Play(unsigned char *);
+	void QuickDomainAnalysis(cv::Mat);
+	void SplitWater(cv::Mat);
 
-	int maxDistance = 40000, minDistance = 5000;
-	int fxAndBaseLine = 12821030;
+	int h = 930; //表示摄像头距离水面的高度,单位mm
+	float nearestWater = /*6.3138*/ 10 * h; //最低像素区域距离船只的实际距离
+	int farthestWater = 50000; //最远像素区域距离船只的实际距离
+	int pixel = 200;
+
 	int width, height, type;
+	int maxDistance = 50000, minDistance = 5000;
 	cv::Mat depthBuf,depthSource; //Depth Buffer
 	mutable std::shared_mutex depthMutex;
 
 private:
-	void BufferD11ConvertToGray(unsigned char* buf);
-	void BufferZ14ConvertToGray(unsigned char* buf);
-	
-	unsigned char* pDepthBuf; //Depth Buffer Pointer
+	int fxAndBaseLine = 12821030;
+	unsigned char* pDepthBuf;
+	unsigned short* pDepthSource;
+
+	void BufferReader(unsigned char* buf);
 };
