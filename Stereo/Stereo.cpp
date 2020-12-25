@@ -127,6 +127,9 @@ int main()
 	namedWindow(WINDOW_NAME);
 	cvui::init(WINDOW_NAME);
 
+	bool UseSplitWater = false;
+
+
 	while (waitKey(1) != 27)
 	{
 		Mat color, depth, depthSource;
@@ -190,23 +193,25 @@ int main()
 
 			//GaussianBlur(depth, depth, Size(5, 5), 0, 0); //高斯滤波
 
-			//medianBlur(depth, depth, 5); //中值滤波
+			medianBlur(depth, depth, 5); //中值滤波
 
 			//blur(depth, depth, Size(3, 3), Point(-1, -1), 4);
 
 			//快速连通域分析
-			//depth = depthImg->QuickDomainAnalysis(depth);
+			//depthImg->QuickDomainAnalysis(depthSource);
 
-			depthImg->SplitWater(depthSource);
+			if(UseSplitWater)
+				depthImg->SplitWater(depthSource);
 
 			//可调节远近距离，单位mm
-			cvui::window(depthSource, 900, 300, 200, 400, "Settings");
-			cvui::trackbar(depthSource, 915, 130, 270, &depthImg->minDistance, 600, 10000);
-			cvui::trackbar(depthSource, 915, 170, 270, &depthImg->maxDistance, 11000, 50000);
+			//cvui::window(depthSource, 900, 300, 180, 180, "Settings");
+
+			cvui::checkbox(depthSource, 915, 80, "Use Split Water", &UseSplitWater);
+			cvui::trackbar(depthSource, 915, 120, 270, &depthImg->minDistance, 600, 10000);
+			cvui::trackbar(depthSource, 915, 180, 270, &depthImg->maxDistance, 11000, 50000);
 			
-			cvui::trackbar(depthSource, 915, 210, 270, &depthImg->h, 100, 3000);
-			cvui::trackbar(depthSource, 915, 250, 270, &depthImg->farthestWater, 1000, 50000);
-			cvui::trackbar(depthSource, 915, 290, 270, &depthImg->pixel, 0, 720);
+			cvui::trackbar(depthSource, 915, 240, 270, &depthImg->h, 300, 3000);
+			cvui::trackbar(depthSource, 915, 300, 270, &depthImg->angle , 2, 88);
 			cvui::update();
 
 			imshow(WINDOW_NAME, depthSource);

@@ -2,6 +2,7 @@
 
 #include <shared_mutex>
 #include <mutex>
+#include "math.h"
 
 class DepthImg {
 public:
@@ -12,23 +13,23 @@ public:
 	}
 
 	void Play(unsigned char *);
-	void QuickDomainAnalysis(cv::Mat);
+	cv::Mat QuickDomainAnalysis(cv::Mat);
 	void SplitWater(cv::Mat);
 
 	int h = 930; //表示摄像头距离水面的高度,单位mm
-	float nearestWater = /*6.3138*/ 10 * h; //最低像素区域距离船只的实际距离
-	int farthestWater = 50000; //最远像素区域距离船只的实际距离
-	int pixel = 200;
+	int angle = 9; // 摄像头相对于地面拍摄到的最低点的角度信息
+	
 
 	int width, height, type;
 	int maxDistance = 50000, minDistance = 5000;
 	cv::Mat depthBuf,depthSource; //Depth Buffer
 	mutable std::shared_mutex depthMutex;
 
-private:
+private:	
 	int fxAndBaseLine = 12821030;
 	unsigned char* pDepthBuf;
 	unsigned short* pDepthSource;
 
 	void BufferReader(unsigned char* buf);
+	float AngleConverter(int,int);
 };

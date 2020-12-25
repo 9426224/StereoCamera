@@ -63,12 +63,12 @@ void DepthImg::BufferReader(unsigned char* buf)
 }
 
 
-void DepthImg::QuickDomainAnalysis(cv::Mat depth)
+cv::Mat DepthImg::QuickDomainAnalysis(cv::Mat depth)
 {
 	//快速连通域分析
 	cv::Mat depth_thresh, depth_label, stats, centroids;
 
-	cv::threshold(depth, depth_thresh, 0, 255, cv::THRESH_BINARY); //二值化阈值处理 大于0则置为255
+	cv::threshold(depth, depth_thresh, 0, 65535, cv::THRESH_BINARY); //二值化阈值处理 大于0则置为255
 
 	int nccomps = connectedComponentsWithStats(depth_thresh, depth_label, stats, centroids);
 
@@ -90,21 +90,40 @@ void DepthImg::QuickDomainAnalysis(cv::Mat depth)
 	}
 
 	depth = depth.mul(depth_thresh);
+
+	return depth;
 }
 
 void DepthImg::SplitWater(cv::Mat depth)
 {
 	
-	float distancePerPixel = (farthestWater - nearestWater) / pixel; //单位像素代表的距离
+	float nearestWater = AngleConverter(angle, 0) * h; //最低像素区域距离船只的实际距离
+	int pixel = ((AngleConverter(angle, 1) * maxDistance - h) / (AngleConverter(angle, 1) * maxDistance)) * height / 2;
+	float distancePerPixel = (maxDistance - nearestWater) / pixel; //单位像素代表的距离
 
-	for (int i = height - 1 ; i > height - pixel; i--)
+	for (int i = 0 ; i < pixel; i++)
 	{
 		for (int j = 0; j < width; j++)
 		{
-			if (distancePerPixel * i + nearestWater > depth.at<ushort>(i, j))
+			if (std::sqrt(pow(h, 2) + pow(nearestWater + i * distancePerPixel, 2)) > depth.at<ushort>(height - pixel + i, j))
 			{
-				depth.at<ushort>(i, j) = 0;
+				depth.at<ushort>(height - pixel + i, j) = 65535;
 			}
 		}
 	}
+}
+
+float DepthImg::AngleConverter(int angle,int type)
+{
+	float PI = acos(0.0) / 90.0;
+	if (type == 0)
+	{
+		return sin((90.0 - angle) * PI)/ sin(angle * PI);
+	}
+	if (type == 1)
+	{
+		return sin(angle * PI) / sin((90.0 - angle) * PI);
+	}
+	
+	return 0;
 }
