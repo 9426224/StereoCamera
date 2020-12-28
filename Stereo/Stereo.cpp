@@ -27,17 +27,7 @@ Rect validROIL, validROIR; //图像裁剪之后的区域
 Size imageSize; //图像尺寸
 #pragma endregion
 
-/// <summary>
-/// Image Callback Function
-/// </summary>
-/// <param name="imgType">Type of return images.</param>
-/// <param name="imgId"></param>
-/// <param name="imgBuf">Images' buffer.</param>
-/// <param name="imgSize"></param>
-/// <param name="width">Images' width.</param>
-/// <param name="height">Images' height.</param>
-/// <param name="serialNumber"></param>
-/// <param name="pParam"></param>
+//图像回调函数
 void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgBuf, int imgSize, int width, int height, int serialNumber, void* pParam)
 {
 	if (LenaDDIImageType::IsImageColor(imgType))
@@ -53,8 +43,6 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 		printf_s("Unknown Image Type\n");
 	}
 }
-
-
 
 int main()
 {

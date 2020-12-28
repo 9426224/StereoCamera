@@ -1,9 +1,6 @@
 #include "DepthImg.h"
 
-/// <summary>
-/// Read parollax or depth images.
-/// </summary>
-/// <param name="buf">Return buffer from callback function.</param>
+//读取视差或深度图,通过回调函数传输调用
 void DepthImg::Play(unsigned char* buf)
 {
 	BufferReader(buf);
@@ -14,6 +11,7 @@ void DepthImg::Play(unsigned char* buf)
 	depthSource = img2;
 }
 
+//读取地址中存储的Buffer信息
 void DepthImg::BufferReader(unsigned char* buf)
 {
 	int nBPS;
@@ -25,7 +23,7 @@ void DepthImg::BufferReader(unsigned char* buf)
 	pDL = pDepthBuf;
 	pDSL = pDepthSource;
 
-	int minLength = fxAndBaseLine / (minDistance + 1500), maxLength = fxAndBaseLine / (maxDistance + 1500);
+	int minLength = fxAndBaseLine / (minDistance + 1500), maxLength = fxAndBaseLine / (maxDistance + 1500); //最后加减的数字为理论测试经过实际测量之后得到的误差修正
 
 	for (int i = 0; i < height; i++)
 	{
@@ -62,13 +60,12 @@ void DepthImg::BufferReader(unsigned char* buf)
 	}
 }
 
-
+//快速连通域分析,仅适用于8bit图像
 cv::Mat DepthImg::QuickDomainAnalysis(cv::Mat depth)
 {
-	//快速连通域分析
 	cv::Mat depth_thresh, depth_label, stats, centroids;
 
-	cv::threshold(depth, depth_thresh, 0, 65535, cv::THRESH_BINARY); //二值化阈值处理 大于0则置为255
+	cv::threshold(depth, depth_thresh, 0, 255, cv::THRESH_BINARY); //二值化阈值处理 大于0则置为255
 
 	int nccomps = connectedComponentsWithStats(depth_thresh, depth_label, stats, centroids);
 
@@ -94,6 +91,7 @@ cv::Mat DepthImg::QuickDomainAnalysis(cv::Mat depth)
 	return depth;
 }
 
+//水面切割
 void DepthImg::SplitWater(cv::Mat depth)
 {
 	
@@ -105,7 +103,7 @@ void DepthImg::SplitWater(cv::Mat depth)
 	{
 		for (int j = 0; j < width; j++)
 		{
-			if (std::sqrt(pow(h, 2) + pow(nearestWater + i * distancePerPixel, 2)) > depth.at<ushort>(height - pixel + i, j))
+			if (std::sqrt(pow(h, 2) + pow(nearestWater + i * distancePerPixel, 2)) > depth.at<ushort>(height - i, j))
 			{
 				depth.at<ushort>(height - pixel + i, j) = 65535;
 			}
@@ -113,6 +111,7 @@ void DepthImg::SplitWater(cv::Mat depth)
 	}
 }
 
+//角度转换
 float DepthImg::AngleConverter(int angle,int type)
 {
 	float PI = acos(0.0) / 90.0;
