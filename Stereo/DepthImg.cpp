@@ -5,10 +5,10 @@ void DepthImg::Play(unsigned char* buf)
 {
 	BufferReader(buf);
 	cv::Mat img(cv::Size(width, height), CV_8UC3, pDepthBuf);
-	cv::Mat img2(cv::Size(width, height), CV_16UC3, pDepthSource);
+	cv::Mat img2(cv::Size(width, height), CV_16UC3, pDepthBufBit16);
 	std::unique_lock<std::shared_mutex> lockDepth(depthMutex);
 	depthBuf = img;
-	depthSource = img2;
+	depthBufBit16 = img2;
 }
 
 //读取地址中存储的Buffer信息
@@ -21,7 +21,7 @@ void DepthImg::BufferReader(unsigned char* buf)
 	nBPS = ((width * 3 + 3) / 4) * 4;
 	pWSL = (unsigned short*)buf;
 	pDL = pDepthBuf;
-	pDSL = pDepthSource;
+	pDSL = pDepthBufBit16;
 
 	int minLength = fxAndBaseLine / (minDistance + 1500), maxLength = fxAndBaseLine / (maxDistance + 1500); //最后加减的数字为理论测试经过实际测量之后得到的误差修正
 
@@ -99,13 +99,14 @@ void DepthImg::SplitWater(cv::Mat depth)
 	int pixel = ((AngleConverter(angle, 1) * maxDistance - h) / (AngleConverter(angle, 1) * maxDistance)) * height / 2;
 	float distancePerPixel = (maxDistance - nearestWater) / pixel; //单位像素代表的距离
 
-	for (int i = 0 ; i < pixel; i++)
+	for (int i = 1 ; i <= pixel; i++)
 	{
+		ushort* p = depth.ptr<ushort>(height - i);
 		for (int j = 0; j < width; j++)
 		{
-			if (std::sqrt(pow(h, 2) + pow(nearestWater + i * distancePerPixel, 2)) > depth.at<ushort>(height - i, j))
+			if (std::sqrt(pow(h, 2) + pow(nearestWater + i * distancePerPixel, 2)) > p[j])
 			{
-				depth.at<ushort>(height - pixel + i, j) = 65535;
+				p[j] = 65535;
 			}
 		}
 	}
