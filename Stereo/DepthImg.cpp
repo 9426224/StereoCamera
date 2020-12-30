@@ -100,16 +100,36 @@ void DepthImg::SplitWater(cv::Mat depth)
 	int pixel = ((AngleConverter(angle, 1) * maxDistance - h) / (AngleConverter(angle, 1) * maxDistance)) * height / 2;
 	float distancePerPixel = (maxDistance - nearestWater) / pixel; //单位像素代表的距离
 	std::cout << "Pixel:" << pixel << " nearestWater:"<<nearestWater<<" distancePerPixel:"<<distancePerPixel << std::endl;
-	for (int i = 1 ; i <= pixel; i++)
+	
+	for (int i = 1 ; i <= pixel + abs(USVLeftRightTiltAngle); i++)
 	{
 		ushort* p = depth.ptr<ushort>(height - i);
-		for (int j = 0; j < width; j++)
+
+		int begin, end;
+
+		if (USVLeftRightTiltAngle > 0)
+		{
+			begin = 0;
+			end = std::min((float)width, width * ((i - USVLeftRightTiltAngle - pixel) / (-2 * USVLeftRightTiltAngle)));
+		}
+		else if (USVLeftRightTiltAngle < 0)
+		{
+			begin = std::max((float)0, width * ((i - USVLeftRightTiltAngle - pixel) / (-2 * USVLeftRightTiltAngle)));
+			end = width;
+		}
+		else
+		{
+			begin = 0;
+			end = width;
+		}
+
+		for (int j = begin; j < end; j++)
 		{
 			//if (std::sqrt(pow(h, 2) + pow(nearestWater + i * distancePerPixel, 2) - fixDistance) > p[j])
 			if (nearestWater + i * distancePerPixel + USVHeightChange < p[j])
 			{
 				//std::cout << p[j] << " ";
-			
+
 				p[j] = 65535;
 			}
 		}

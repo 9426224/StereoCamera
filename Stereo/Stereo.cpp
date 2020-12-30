@@ -119,6 +119,7 @@ int main()
 			cvui::trackbar(depth, 915, 240, 270, &depthImg->h, 300, 3000);
 			cvui::trackbar(depth, 915, 300, 270, &depthImg->angle , (float)1.50, (float)10.0);
 			cvui::trackbar(depth, 915, 360, 270, &depthImg->USVHeightChange, -10000, 10000);
+			cvui::trackbar(depth, 915, 360, 270, &depthImg->USVLeftRightTiltAngle, (float)-359, (float)359);
 			cvui::update();
 
 			imshow(WINDOW_NAME, depth);
