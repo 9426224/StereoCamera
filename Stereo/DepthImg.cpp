@@ -96,24 +96,29 @@ void DepthImg::SplitWater(cv::Mat depth)
 {
 	
 	float nearestWater = AngleConverter(angle, 0) * h; //最低像素区域距离船只的实际距离
+	//float nearestWater = 12000;
 	int pixel = ((AngleConverter(angle, 1) * maxDistance - h) / (AngleConverter(angle, 1) * maxDistance)) * height / 2;
 	float distancePerPixel = (maxDistance - nearestWater) / pixel; //单位像素代表的距离
-
+	std::cout << "Pixel:" << pixel << " nearestWater:"<<nearestWater<<" distancePerPixel:"<<distancePerPixel << std::endl;
 	for (int i = 1 ; i <= pixel; i++)
 	{
 		ushort* p = depth.ptr<ushort>(height - i);
 		for (int j = 0; j < width; j++)
 		{
-			if (std::sqrt(pow(h, 2) + pow(nearestWater + i * distancePerPixel, 2)) > p[j])
+			//if (std::sqrt(pow(h, 2) + pow(nearestWater + i * distancePerPixel, 2) - fixDistance) > p[j])
+			if (nearestWater + i * distancePerPixel + USVHeightChange < p[j])
 			{
+				//std::cout << p[j] << " ";
+			
 				p[j] = 65535;
 			}
 		}
+		//getchar();
 	}
 }
 
 //角度转换
-float DepthImg::AngleConverter(int angle,int type)
+float DepthImg::AngleConverter(float angle,int type)
 {
 	float PI = acos(0.0) / 90.0;
 	if (type == 0)
