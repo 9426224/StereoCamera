@@ -112,14 +112,14 @@ int main()
 			}
 
 			//可调节远近距离，单位mm
-		    cvui::window(depth, 900, 60, 300, 350, "Settings");
+		    cvui::window(depth, 900, 60, 300, 400, "Settings");
 			cvui::checkbox(depth, 915, 80, "Use Split Water", &UseSplitWater);
 			cvui::trackbar(depth, 915, 120, 270, &depthImg->minDistance, 600, 10000);
 			cvui::trackbar(depth, 915, 180, 270, &depthImg->maxDistance, 11000, 50000);
 			cvui::trackbar(depth, 915, 240, 270, &depthImg->h, 300, 3000);
 			cvui::trackbar(depth, 915, 300, 270, &depthImg->angle , (float)1.50, (float)10.0);
 			cvui::trackbar(depth, 915, 360, 270, &depthImg->USVHeightChange, -10000, 10000);
-			cvui::trackbar(depth, 915, 360, 270, &depthImg->USVLeftRightTiltAngle, (float)-359, (float)359);
+			cvui::trackbar(depth, 915, 420, 270, &depthImg->USVLeftRightTiltAngle, (float)-360, (float)360);
 			cvui::update();
 
 			imshow(WINDOW_NAME, depth);
