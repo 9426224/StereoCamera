@@ -23,18 +23,21 @@ bool Device::Init()
 			pDevSelInfo.index = i;
 		}
 	}
-
+  
 	LenaDDI_Init2(&pHandleLenaDDI, false, true); //设备初始化
 	
 	LenaDDI_GetDeviceResolutionList(pHandleLenaDDI, &pDevSelInfo, LenaDDI_MAX_STREAM_COUNT, pStreamColorInfo, LenaDDI_MAX_STREAM_COUNT, pStreamDepthInfo);
 
 	USBType = (pStreamDepthInfo[0].nWidth == 1280) ? 1 : 0;
 
-	LenaDDI_SetDepthDataType(pHandleLenaDDI, &pDevSelInfo, USBType ? (depthOption == 14 ? LenaDDI_DEPTH_DATA_14_BITS : (depthOption == 11 ? LenaDDI_DEPTH_DATA_11_BITS : LenaDDI_DEPTH_DATA_8_BITS)) : LenaDDI_DEPTH_DATA_8_BITS);
+	if (depthResolution != -1)
+	{
+		LenaDDI_SetDepthDataType(pHandleLenaDDI, &pDevSelInfo, USBType ? (depthOption == 14 ? LenaDDI_DEPTH_DATA_14_BITS : (depthOption == 11 ? LenaDDI_DEPTH_DATA_11_BITS : LenaDDI_DEPTH_DATA_8_BITS)) : LenaDDI_DEPTH_DATA_8_BITS);
+	}
 
 	fps = LenaDDI_IsInterleaveDevice(pHandleLenaDDI, &pDevSelInfo) ? 60 : 30;
 
-	LenaDDI_OpenDeviceEx(pHandleLenaDDI, &pDevSelInfo, colorResolution, isImgRGB, depthResolution, LenaDDIDepthSwitch::Depth1, callbackFn, NULL, &fps, 0);
+	LenaDDI_OpenDeviceEx(pHandleLenaDDI, &pDevSelInfo, colorResolution, isImgRGB, depthResolution, depthResolution != -1 ? LenaDDIDepthSwitch::Depth1 : 0, callbackFn, NULL, &fps, 0);
 	
 	return true;
 }

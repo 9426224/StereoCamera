@@ -1,25 +1,18 @@
-﻿#include <thread>
+﻿#define CVUI_IMPLEMENTATION
+#include "cvui.h"
 
 #include "Device.h"
 #include "DepthImg.h"
 #include "ColorImg.h"
+
+#define WINDOW_NAME "Depth"
 
 using namespace cv;
 
 DepthImg* depthImg = nullptr;
 ColorImg* colorImg = nullptr;
 
-/// <summary>
-/// 图像回调函数
-/// </summary>
-/// <param name="imgType">图像类型</param>
-/// <param name="imgId"></param>
-/// <param name="imgBuf">图像缓存流</param>
-/// <param name="imgSize"></param>
-/// <param name="width">图像宽度</param>
-/// <param name="height">图像高度</param>
-/// <param name="serialNumber"></param>
-/// <param name="pParam"></param>
+//图像回调函数
 void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgBuf, int imgSize, int width, int height, int serialNumber, void* pParam)
 {
 	if (LenaDDIImageType::IsImageColor(imgType))
@@ -52,49 +45,72 @@ int main()
 			device.USBType ? device.depthOption : 8);
 	}
 
-	depthImg->Init();
 
-	while (true)
+	namedWindow(WINDOW_NAME);
+	cvui::init(WINDOW_NAME);
+	bool UseSplitWater = false;
+	Mat color, depth, depthBit16;
+	
+	while (waitKey(1) != 27)
 	{
-		if (depthImg->depthBuf.rows != 0 && colorImg->colorBuf.rows != 0)
+		
+		if (!colorImg->colorBuf.empty())
 		{
-			Mat color,depth;
 			{
-				std::shared_lock<std::shared_mutex> lockColor(depthImg->depthMutex);
-				depth = depthImg->depthBuf;
 				std::shared_lock<std::shared_mutex> lockDepth(colorImg->colorMutex);
 				color = colorImg->colorBuf;
 			}
-			
 
-			/* 深度图处理 */
+			//colorImg->ImageProcess(color);
+
+			//imshow("color", color);
+		}
+		if (!depthImg->depthBuf.empty())
+		{
+			{
+				std::shared_lock<std::shared_mutex> lockColor(depthImg->depthMutex);
+				depth = depthImg->depthBuf;
+				depthBit16 = depthImg->depthBufBit16;
+			}
+			/* 深度图像处理 */
 			cvtColor(depth, depth, COLOR_BGR2GRAY); //三通道灰度图转单通道灰度图,为后续计算做准备
+			cvtColor(depthBit16, depthBit16, COLOR_BGR2GRAY);
 
 			//GaussianBlur(depth, depth, Size(5, 5), 0, 0); //高斯滤波
 
-			medianBlur(depth, depth, 5); //中值滤波
+			//medianBlur(depth, depth, 5); //中值滤波
 
-			//threshold(depth, depth, 0, 255, THRESH_OTSU); //大津法 二值化阈值处理
+			//blur(depth, depth, Size(3, 3), Point(-1, -1), 4);
 
+			//快速连通域分析
+			//depthImg->QuickDomainAnalysis(depthSource);
 
-			/* 彩色图处理 */
-			cvtColor(color, color, COLOR_BGR2GRAY); //彩色图像转为灰度图像
+			if(UseSplitWater)
+				depthImg->SplitWater(depthBit16);
 
-			GaussianBlur(color, color, Size(5, 5), 0, 0); //高斯滤波
+			for (int i = 0; i < depthBit16.rows; i++)
+			{
+				ushort* p = depthBit16.ptr<ushort>(i);
+				uchar* q = depth.ptr<uchar>(i);
+				for (int j = 0; j < depthBit16.cols; j++)
+				{
+					q[j] = p[j] / 256;
+					
+				}
+			}
 
-			//threshold(color, color, 0, 255, THRESH_OTSU);
+			//可调节远近距离，单位mm
+		    cvui::window(depth, 900, 60, 300, 400, "Settings");
+			cvui::checkbox(depth, 915, 80, "Use Split Water", &UseSplitWater);
+			cvui::trackbar(depth, 915, 120, 270, &depthImg->minDistance, 600, 10000);
+			cvui::trackbar(depth, 915, 180, 270, &depthImg->maxDistance, 11000, 50000);
+			cvui::trackbar(depth, 915, 240, 270, &depthImg->h, 300, 3000);
+			cvui::trackbar(depth, 915, 300, 270, &depthImg->angle , (float)1.50, (float)10.0);
+			cvui::trackbar(depth, 915, 360, 270, &depthImg->USVHeightChange, -10000, 10000);
+			cvui::trackbar(depth, 915, 420, 270, &depthImg->USVLeftRightTiltAngle, (float)-360, (float)360);
+			cvui::update();
 
-			Canny(color, color, 50, 500, 3); //Canny算子边缘检测
-
-			std::vector<std::vector<Point>> contours;
-			std::vector<Vec4i> hierarchy;
-			findContours(color, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-			drawContours(depth, contours, -1, (0, 0, 255), 3);
-
-			imshow("depth", depth);
-			imshow("color", color);
-
-			waitKey(1);
+			imshow(WINDOW_NAME, depth);
 		}
 	}
 
