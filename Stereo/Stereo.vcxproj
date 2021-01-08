@@ -79,7 +79,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)include\opencv;$(SolutionDir)include\eSPDI\win;$(SolutionDir)include\cvui;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\OpenCV\x64;$(SolutionDir)lib\eSPDI\win\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)lib\OpenCV\x86_64;$(SolutionDir)lib\eSPDI\win\x86_64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
