@@ -17,11 +17,17 @@ void ImgCallback(EtronDIImageType::Value imgType, int imgId, unsigned char* imgB
 {
 	if (EtronDIImageType::IsImageColor(imgType))
 	{
-		colorImg->Play(imgBuf);
+		if (colorImg != nullptr)
+		{
+			colorImg->Play(imgBuf);
+		}
 	}
 	else if (EtronDIImageType::IsImageDepth(imgType))
 	{
-		depthImg->Play(imgBuf);
+		if (depthImg != nullptr)
+		{
+			depthImg->Play(imgBuf);
+		}
 	}
 	else
 	{
