@@ -2,15 +2,15 @@
 
 Device::~Device()
 {
-	if (pHandleLenaDDI != nullptr)
+	if (pHandleEtronDI != nullptr)
 	{
-		pHandleLenaDDI = nullptr;
+		pHandleEtronDI = nullptr;
 	}
 }
 
 bool Device::Init()
 {
-	if (!GetLenaDDIDevice())
+	if (!GetEtronDIDevice())
 	{
 		printf_s("Get Device Failed!\n");
 		return false;
@@ -24,20 +24,20 @@ bool Device::Init()
 		}
 	}
   
-	LenaDDI_Init2(&pHandleLenaDDI, false, true); //设备初始化
+	EtronDI_Init2(&pHandleEtronDI, false, true); //设备初始化
 	
-	LenaDDI_GetDeviceResolutionList(pHandleLenaDDI, &pDevSelInfo, LenaDDI_MAX_STREAM_COUNT, pStreamColorInfo, LenaDDI_MAX_STREAM_COUNT, pStreamDepthInfo);
+	EtronDI_GetDeviceResolutionList(pHandleEtronDI, &pDevSelInfo, ETronDI_MAX_STREAM_COUNT, pStreamColorInfo, ETronDI_MAX_STREAM_COUNT, pStreamDepthInfo);
 
 	USBType = (pStreamDepthInfo[0].nWidth == 1280) ? 1 : 0;
 
 	if (depthResolution != -1)
 	{
-		LenaDDI_SetDepthDataType(pHandleLenaDDI, &pDevSelInfo, USBType ? (depthOption == 14 ? LenaDDI_DEPTH_DATA_14_BITS : (depthOption == 11 ? LenaDDI_DEPTH_DATA_11_BITS : LenaDDI_DEPTH_DATA_8_BITS)) : LenaDDI_DEPTH_DATA_8_BITS);
+		EtronDI_SetDepthDataType(pHandleEtronDI, &pDevSelInfo, USBType ? (depthOption == 14 ? ETronDI_DEPTH_DATA_14_BITS : (depthOption == 11 ? ETronDI_DEPTH_DATA_11_BITS : ETronDI_DEPTH_DATA_8_BITS)) : ETronDI_DEPTH_DATA_8_BITS);
 	}
 
-	fps = LenaDDI_IsInterleaveDevice(pHandleLenaDDI, &pDevSelInfo) ? 60 : 30;
+	fps = EtronDI_IsInterleaveDevice(pHandleEtronDI, &pDevSelInfo) ? 60 : 30;
 
-	LenaDDI_OpenDeviceEx(pHandleLenaDDI, &pDevSelInfo, colorResolution, isImgRGB, depthResolution, depthResolution != -1 ? LenaDDIDepthSwitch::Depth1 : 0, callbackFn, NULL, &fps, 0);
+	EtronDI_OpenDeviceEx(pHandleEtronDI, &pDevSelInfo, colorResolution, isImgRGB, depthResolution, depthResolution != -1 ? EtronDIDepthSwitch::Depth1 : 0, callbackFn, NULL, &fps, 0);
 	
 	return true;
 }
@@ -46,21 +46,21 @@ void Device::Release(void *dev)
 {
 	if (dev != nullptr)
 	{
-		LenaDDI_CloseDevice(dev, &pDevSelInfo);
-		LenaDDI_Release(&dev);
+		EtronDI_CloseDevice(dev, &pDevSelInfo);
+		EtronDI_Release(&dev);
 		dev = nullptr;
 	}
 }
 
-bool Device::GetLenaDDIDevice()
+bool Device::GetEtronDIDevice()
 {
-	if (LenaDDI_Init(&hLenaDDI, false) < 0)
+	if (EtronDI_Init(&hEtronDI, false) < 0)
 	{
-		Release(hLenaDDI);
+		Release(hEtronDI);
 	}
-	if (hLenaDDI != NULL)
+	if (hEtronDI != NULL)
 	{
-		int deviceCount = LenaDDI_GetDeviceNumber(hLenaDDI);
+		int deviceCount = EtronDI_GetDeviceNumber(hEtronDI);
 		if (deviceCount > 0)
 		{
 			devInfo.clear();
@@ -69,10 +69,10 @@ bool Device::GetLenaDDIDevice()
 				DEVSELINFO pdevSelInfo;
 				pdevSelInfo.index = i;
 				DEVINFORMATIONEX pdevinfo;
-				LenaDDI_GetDeviceInfoEx(hLenaDDI, &pdevSelInfo, &pdevinfo);
+				EtronDI_GetDeviceInfoEx(hEtronDI, &pdevSelInfo, &pdevinfo);
 				devInfo.push_back(pdevinfo);
 			}
-			Release(hLenaDDI);
+			Release(hEtronDI);
 			return true;
 		}
 	}

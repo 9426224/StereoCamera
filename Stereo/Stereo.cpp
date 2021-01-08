@@ -13,13 +13,13 @@ DepthImg* depthImg = nullptr;
 ColorImg* colorImg = nullptr;
 
 //图像回调函数
-void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgBuf, int imgSize, int width, int height, int serialNumber, void* pParam)
+void ImgCallback(EtronDIImageType::Value imgType, int imgId, unsigned char* imgBuf, int imgSize, int width, int height, int serialNumber, void* pParam)
 {
-	if (LenaDDIImageType::IsImageColor(imgType))
+	if (EtronDIImageType::IsImageColor(imgType))
 	{
 		colorImg->Play(imgBuf);
 	}
-	else if (LenaDDIImageType::IsImageDepth(imgType))
+	else if (EtronDIImageType::IsImageDepth(imgType))
 	{
 		depthImg->Play(imgBuf);
 	}

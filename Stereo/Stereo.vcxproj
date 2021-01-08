@@ -78,8 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)include\opencv;$(SolutionDir)include\eSPDI\win;$(SolutionDir)include\cvui;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\OpenCV\x64;$(SolutionDir)lib\eSPDI\win\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -123,7 +123,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world310d.lib;eSPDI_DM.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -154,23 +154,6 @@
     <ClInclude Include="Device.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets" Condition="Exists('..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets')" />
-    <Import Project="..\packages\OpenCv.3.1.0\build\native\OpenCv.targets" Condition="Exists('..\packages\OpenCv.3.1.0\build\native\OpenCv.targets')" />
-    <Import Project="..\packages\LenaCV.redist.1.2.4.44\build\native\LenaCV.redist.targets" Condition="Exists('..\packages\LenaCV.redist.1.2.4.44\build\native\LenaCV.redist.targets')" />
-    <Import Project="..\packages\LenaCV.1.2.4.44\build\native\LenaCV.targets" Condition="Exists('..\packages\LenaCV.1.2.4.44\build\native\LenaCV.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCv.redist.3.1.0\build\native\OpenCv.redist.targets'))" />
-    <Error Condition="!Exists('..\packages\OpenCv.3.1.0\build\native\OpenCv.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenCv.3.1.0\build\native\OpenCv.targets'))" />
-    <Error Condition="!Exists('..\packages\LenaCV.redist.1.2.4.44\build\native\LenaCV.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LenaCV.redist.1.2.4.44\build\native\LenaCV.redist.targets'))" />
-    <Error Condition="!Exists('..\packages\LenaCV.1.2.4.44\build\native\LenaCV.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LenaCV.1.2.4.44\build\native\LenaCV.targets'))" />
-  </Target>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>
