@@ -9,11 +9,11 @@ public:
 
 	void Play(unsigned char* buf);
 	void ImageProcess(cv::Mat);
-
-	bool preProcess = false; // ±íÊ¾ÊÇ·ñ¶ÔÍ¼Ïñ½øĞĞÔ¤´¦Àí²¢µÃµ½Ïà¶ÔÓ¦µÄÊı¾İ
-	int width, height; //²ÊÉ«ÊÓÆµµÄ¿í¶ÈÓë¸ß¶È
-	cv::Mat colorBuf; //²ÊÉ«ÊÓÆµÍ¼Ïñ´æ´¢Êı×é
-	mutable std::shared_mutex colorMutex; //ÓÃÓÚ²ÊÉ«Í¼ÏñÊä³öÊ±½øĞĞËø¶¨·ÀÖ¹·ÃÎÊ³åÍ»
+  
+	bool preProcess = false;
+	int width, height;
+	cv::Mat colorBuf; 
+	mutable std::shared_mutex colorMutex;
 
 private:
 	void PreProcess(cv::Mat);
@@ -26,7 +26,7 @@ private:
 	cv::Mat Transcation = (cv::Mat_<double>(3, 1) << -394.7730882974745, 4.033315779561094, -95.74162655063917);
 	cv::Mat Rotation = (cv::Mat_<double>(3, 3) << 0.989025767924407, 0.005703614198638, 0.14763298807045, -0.003428051080464, 0.999871443268512, -0.015663505416523, -0.147703347447938, 0.014985517048698, 0.988918174285141);
 	cv::Mat Rl, Rr, Pl, Pr, Q;
-	cv::Mat mapLx, mapLy, mapRx, mapRy;//Ó³Éä±í
-	cv::Rect validROIL, validROIR; //Í¼Ïñ²Ã¼ôÖ®ºóµÄÇøÓò
-	cv::Size imageSize; //Í¼Ïñ³ß´ç
+	cv::Mat mapLx, mapLy, mapRx, mapRy;//æ˜ å°„è¡¨
+	cv::Rect validROIL, validROIR; //å›¾åƒè£å‰ªåçš„åŒºåŸŸ
+	cv::Size imageSize; //å›¾åƒå°ºå¯¸
 };

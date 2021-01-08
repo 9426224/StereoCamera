@@ -1,6 +1,6 @@
 #include "DepthImg.h"
 
-//¶ÁÈ¡ÊÓ²î»òÉî¶ÈÍ¼,Í¨¹ı»Øµ÷º¯Êı´«Êäµ÷ÓÃ
+//è¯»å–è§†å·®æˆ–æ·±åº¦å›¾ï¼Œç”±å›è°ƒå‡½æ•°å›ä¼ 
 void DepthImg::Play(unsigned char* buf)
 {
 	BufferReader(buf);
@@ -11,7 +11,7 @@ void DepthImg::Play(unsigned char* buf)
 	depthBufBit16 = img2;
 }
 
-//¶ÁÈ¡µØÖ·ÖĞ´æ´¢µÄBufferĞÅÏ¢
+//è¯»å–åœ°å€ä¸­å­˜å‚¨çš„Bufferä¿¡æ¯
 void DepthImg::BufferReader(unsigned char* buf)
 {
 	int nBPS;
@@ -23,7 +23,7 @@ void DepthImg::BufferReader(unsigned char* buf)
 	pDL = pDepthBuf;
 	pDSL = pDepthBufBit16;
 
-	int minLength = fxAndBaseLine / (minDistance + 1500), maxLength = fxAndBaseLine / (maxDistance + 1500); //×îºó¼Ó¼õµÄÊı×ÖÎªÀíÂÛ²âÊÔ¾­¹ıÊµ¼Ê²âÁ¿Ö®ºóµÃµ½µÄÎó²îĞŞÕı
+	int minLength = fxAndBaseLine / (minDistance + 1500), maxLength = fxAndBaseLine / (maxDistance + 1500); //æœ€ååŠ å‡çš„æ•°å­—ä¸ºç†è®ºæµ‹è¯•ç»è¿‡å®é™…æµ‹é‡ä¹‹åå¾—åˆ°çš„è¯¯å·®ä¿®æ­£
 
 	for (int i = 0; i < height; i++)
 	{
@@ -60,12 +60,13 @@ void DepthImg::BufferReader(unsigned char* buf)
 	}
 }
 
-//¿ìËÙÁ¬Í¨Óò·ÖÎö,½öÊÊÓÃÓÚ8bitÍ¼Ïñ
+//å¿«é€Ÿè¿é€šåŸŸåˆ†æ,ä»…é€‚ç”¨äº8bitå›¾åƒ
 cv::Mat DepthImg::QuickDomainAnalysis(cv::Mat depth)
 {
+  /*
 	cv::Mat depth_thresh, depth_label, stats, centroids;
 
-	cv::threshold(depth, depth_thresh, 0, 255, cv::THRESH_BINARY); //¶şÖµ»¯ãĞÖµ´¦Àí ´óÓÚ0ÔòÖÃÎª255
+	cv::threshold(depth, depth_thresh, 0, 255, cv::THRESH_BINARY); //äºŒå€¼åŒ–é˜ˆå€¼å¤„ç† å¤§äº0åˆ™ç½®ä¸º255
 
 	int nccomps = connectedComponentsWithStats(depth_thresh, depth_label, stats, centroids);
 
@@ -87,18 +88,18 @@ cv::Mat DepthImg::QuickDomainAnalysis(cv::Mat depth)
 	}
 
 	depth = depth.mul(depth_thresh);
-
+  */
 	return depth;
 }
 
-//Ë®ÃæÇĞ¸î
+//æ°´é¢åˆ‡å‰²
 void DepthImg::SplitWater(cv::Mat depth)
 {
 	
-	float nearestWater = AngleConverter(angle, 0) * h; //×îµÍÏñËØÇøÓò¾àÀë´¬Ö»µÄÊµ¼Ê¾àÀë
+	float nearestWater = AngleConverter(angle, 0) * h; //æœ€ä½åƒç´ åŒºåŸŸè·ç¦»èˆ¹åªçš„å®é™…è·ç¦»
 	//float nearestWater = 12000;
 	int pixel = ((AngleConverter(angle, 1) * maxDistance - h) / (AngleConverter(angle, 1) * maxDistance)) * height / 2;
-	float distancePerPixel = (maxDistance - nearestWater) / pixel; //µ¥Î»ÏñËØ´ú±íµÄ¾àÀë
+	float distancePerPixel = (maxDistance - nearestWater) / pixel; //å•ä½åƒç´ ä»£è¡¨çš„è·ç¦»
 	std::cout << "Pixel:" << pixel << " nearestWater:"<<nearestWater<<" distancePerPixel:"<<distancePerPixel << std::endl;
 	
 	for (int i = 1 ; i <= pixel + abs(USVLeftRightTiltAngle); i++)
@@ -140,7 +141,7 @@ void DepthImg::SplitWater(cv::Mat depth)
 	}
 }
 
-//½Ç¶È×ª»»
+//è§’åº¦è½¬æ¢
 float DepthImg::AngleConverter(float angle,int type)
 {
 	float PI = acos(0.0) / 90.0;

@@ -21,21 +21,22 @@ public:
 	cv::Mat QuickDomainAnalysis(cv::Mat);
 	void SplitWater(cv::Mat);
 
-	int h = 930; //±íÊ¾ÉãÏñÍ·¾àÀëË®ÃæµÄ¸ß¶È,µ¥Î»mm
-	float angle = 4.4316; // ÉãÏñÍ·Ïà¶ÔÓÚµØÃæÅÄÉãµ½µÄ×îµÍµãµÄ½Ç¶ÈĞÅÏ¢
-	int USVHeightChange = 0; //´¬Ö»¸ß¶È±ä»¯Ê±½øĞĞµ÷Õû
-	float USVLeftRightTiltAngle = 0; //´¬Ö»×óÓÒ·­×ªÊ±µÄÊÓ³¡½Ç±ä»¯
+	int h = 930; //è¡¨ç¤ºæ‘„åƒå¤´è·ç¦»æ°´é¢çš„é«˜åº¦,å•ä½mm
+	float angle = 4.4316; //æ‘„åƒå¤´ç›¸å¯¹äºåœ°é¢æ‹æ‘„åˆ°çš„æœ€ä½ç‚¹çš„è§’åº¦ä¿¡æ¯
+	int USVHeightChange = 0; //èˆ¹åªé«˜åº¦å˜åŒ–æ—¶è¿›è¡Œè°ƒæ•´
+	float USVLeftRightTiltAngle = 0; //èˆ¹åªå·¦å³ç¿»è½¬æ—¶çš„è§†åœºè§’å˜åŒ–
 
-	int width, height, type; //Éî¶ÈÊÓÆµµÄ¿í¶ÈÓë¸ß¶È¡¢ÀàĞÍ
-	int maxDistance = 16560, minDistance = 5000; //Ïà»úÅÄÉãµÄ×îÔ¶¾àÀëÓë×î½ü¾àÀë,¿Éµ÷½Ú
-	cv::Mat depthBuf,depthBufBit16; //Éî¶ÈĞÅÏ¢´æ´¢Êı×é,ÆäÖĞBufÊÇ8bit,SourceÊÇ16bit
-	mutable std::shared_mutex depthMutex; //ÓÃÓÚÉî¶ÈÍ¼ÏñÊä³öÊ±½øĞĞËø¶¨·ÀÖ¹·ÃÎÊ³åÍ»
+	int width, height, type; //æ·±åº¦è§†é¢‘çš„å®½åº¦ä¸é«˜åº¦ã€ç±»å‹
+	int maxDistance = 16560, minDistance = 5000; //ç›¸æœºæ‹æ‘„çš„æœ€è¿œè·ç¦»ä¸æœ€è¿‘è·ç¦»,å¯è°ƒèŠ‚
+	cv::Mat depthBuf,depthBufBit16; //æ·±åº¦ä¿¡æ¯å­˜å‚¨æ•°ç»„,å…¶ä¸­Bufæ˜¯8bit,Sourceæ˜¯16bit
+	mutable std::shared_mutex depthMutex; //ç”¨äºæ·±åº¦å›¾åƒè¾“å‡ºæ—¶è¿›è¡Œé”å®šé˜²æ­¢è®¿é—®å†²çª
 
 private:	
-	int fxAndBaseLine = 12821030; //½¹¾àÓë»ùÏßµÄ³Ë»ı£¬fx = 3203.2 = 3.75mm * ¾µÍ·Êµ¼Ê½¹¾à ,BaseLine = 400.257mm
+	int fxAndBaseLine = 12821030; //ç„¦è·ä¸åŸºçº¿çš„ä¹˜ç§¯ï¼Œfx = 3203.2 = 3.75mm * é•œå¤´å®é™…ç„¦è· ,BaseLine = 400.257mm
 	unsigned char* pDepthBuf;
 	unsigned short* pDepthBufBit16;
 
 	void BufferReader(unsigned char* buf);
 	float AngleConverter(float,int);
+  
 };
