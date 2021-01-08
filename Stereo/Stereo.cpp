@@ -1,10 +1,5 @@
 ﻿#define CVUI_IMPLEMENTATION
 #include "cvui.h"
-#include "pcl/io/io.h"
-#include "pcl/io/pcd_io.h"
-
-#include <thread>
-#include "pcl/visualization/cloud_viewer.h"
 
 #include "Device.h"
 #include "DepthImg.h"
@@ -13,7 +8,6 @@
 #define WINDOW_NAME "Depth"
 
 using namespace cv;
-using namespace pcl;
 
 DepthImg* depthImg = nullptr;
 ColorImg* colorImg = nullptr;
@@ -33,11 +27,6 @@ void ImgCallback(LenaDDIImageType::Value imgType, int imgId, unsigned char* imgB
 	{
 		printf_s("Unknown Image Type\n");
 	}
-}
-
-void viewerOneOff(visualization::PCLVisualizer& viewer)
-{
-	viewer.setBackgroundColor(0.0, 0.0, 0.0);
 }
 
 int main()
@@ -60,7 +49,6 @@ int main()
 	namedWindow(WINDOW_NAME);
 	cvui::init(WINDOW_NAME);
 	bool UseSplitWater = false;
-	visualization::CloudViewer viewer("Cloud Viewer");
 	Mat color, depth, depthBit16;
 	
 	while (waitKey(1) != 27)
@@ -123,40 +111,6 @@ int main()
 			cvui::update();
 
 			imshow(WINDOW_NAME, depth);
-		}
-
-		//if(!depthBit16.empty() && !color.empty())
-		if(false)
-		{
-			PointCloud<PointXYZRGB>::Ptr cloud(new PointCloud<PointXYZRGB>);
-			for (int i = 0; i < depthBit16.rows; i++)
-			{
-				ushort* d = depthBit16.ptr<ushort>(i);
-				uchar* c = color.ptr<uchar>(i);
-				for (int j = 0; j < depthBit16.cols; j++)
-				{
-					if (d[j] == 0)
-						continue;
-					PointXYZRGB s;
-					s.z = d[j];
-					s.x = i;
-					s.y = j;
-
-					s.b = c[j * 3];
-					s.g = c[j * 3 + 1];
-					s.r = c[j * 3 + 2];
-
-					cloud->points.push_back(s);
-
-				}
-			}
-
-			cloud->height = depthBit16.rows;
-			cloud->width = depthBit16.cols;
-			cloud->points.resize(cloud->height * cloud->width);
-
-			viewer.showCloud(cloud);
-			viewer.runOnVisualizationThreadOnce(viewerOneOff);
 		}
 	}
 

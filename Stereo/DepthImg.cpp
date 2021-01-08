@@ -111,13 +111,13 @@ void DepthImg::SplitWater(cv::Mat depth)
 		{
 			begin = 0;
 			end = std::min((float)width, width * ((i - USVLeftRightTiltAngle - pixel) / (-2 * USVLeftRightTiltAngle)));
-			depthChangeRate = (2 * USVLeftRightTiltAngle) / (sqrt(pow(width, 2) + pow(2 * USVLeftRightTiltAngle, 2)));
+			//depthChangeRate = (2 * USVLeftRightTiltAngle) / (sqrt(pow(width, 2) + pow(2 * USVLeftRightTiltAngle, 2)));
 		}
 		else if (USVLeftRightTiltAngle < 0)
 		{
 			begin = std::max((float)0, width * ((i - USVLeftRightTiltAngle - pixel) / (-2 * USVLeftRightTiltAngle)));
 			end = width;
-			depthChangeRate = (2 * USVLeftRightTiltAngle) / (sqrt(pow(width, 2) + pow(2 * USVLeftRightTiltAngle, 2)));
+			//depthChangeRate = (2 * USVLeftRightTiltAngle) / (sqrt(pow(width, 2) + pow(2 * USVLeftRightTiltAngle, 2)));
 		}
 		else
 		{
