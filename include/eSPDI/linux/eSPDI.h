@@ -16,6 +16,7 @@
 #include "eSPDI_def.h"
 #include "eSPDI_version.h"
 #include <stdlib.h>
+
 int  EtronDI_Init(void **ppHandleEtronDI, bool bIsLogEnabled);
 int  EtronDI_FindDevice(void *pHandleEtronDI);
 void EtronDI_Release(void **ppHandleEtronDI);

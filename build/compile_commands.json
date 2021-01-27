@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/ubuntu/Project/StereoCamera/build",
+  "command": "/usr/bin/aarch64-linux-gnu-g++-7   -I/home/ubuntu/Project/StereoCamera/include/eSPDI/linux -I/usr/local/cuda/include -isystem /usr/include/opencv4   -std=c++17 -g   -o CMakeFiles/a.out.dir/Stereo/Stereo.cpp.o -c /home/ubuntu/Project/StereoCamera/Stereo/Stereo.cpp",
+  "file": "/home/ubuntu/Project/StereoCamera/Stereo/Stereo.cpp"
+}
+]
