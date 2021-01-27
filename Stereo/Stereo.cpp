@@ -27,12 +27,20 @@ int main(void)
 	//Device PreInit
 	if (EtronDI_Init(&hEtronDI, false) < 0)
 	{
+<<<<<<< HEAD
 		EtronDI_Release(&hEtronDI);
 		cout<<"Can't PreInit Device!"<<endl;
+=======
+		if (colorImg != nullptr)
+		{
+			colorImg->Play(imgBuf);
+		}
+>>>>>>> 490de92a9effeff34657ba282046517875ce2c34
 	}
 
 	if (hEtronDI != nullptr)
 	{
+<<<<<<< HEAD
 		int deviceCount = EtronDI_GetDeviceNumber(hEtronDI);	
 	    if(deviceCount > 0)
 		{
@@ -46,6 +54,11 @@ int main(void)
 				devInfo.push_back(devInformation);
 			}
 			EtronDI_Release(&hEtronDI);
+=======
+		if (depthImg != nullptr)
+		{
+			depthImg->Play(imgBuf);
+>>>>>>> 490de92a9effeff34657ba282046517875ce2c34
 		}
 	}
 	
