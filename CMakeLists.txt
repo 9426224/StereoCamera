@@ -6,7 +6,7 @@ project(StereoCamera)
 
 set(CMAKE_CXXSTANDARD 17)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread")
 
 set(CUDA_TOOLKIT_ROOT_DIR /usr/local/cuda)
 
@@ -18,7 +18,7 @@ set(eSPDI_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/eSPDI/linux)
 
 set(eSPDI_LIB_DIR ${PROJECT_SOURCE_DIR}/lib/eSPDI/linux/aarch64)
 
-set(cuvi_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/cvui)
+set(cvui_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/cvui)
 
 aux_source_directory(./Stereo DIR_SRC)
 

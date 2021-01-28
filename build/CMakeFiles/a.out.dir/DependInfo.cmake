@@ -13,6 +13,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include/eSPDI/linux"
   "/usr/local/cuda/include"
   "/usr/include/opencv4"
+  "../include/cvui"
   )
 
 # Targets to which this target links.
