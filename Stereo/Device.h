@@ -2,12 +2,12 @@
 
 #include "stdafx.h"
 
-#include "PDI_DM.H"
+#include "eSPDI.h"
 
 
 class Device {
 public:
-	Device() : hLenaDDI(nullptr) {}
+	Device() : hEtronDI(nullptr) {}
 	~Device();
 
 	//可以更改的设置
@@ -17,8 +17,8 @@ public:
 	
 	
 	int USBType; //0:USB2.0 1:USB3.0
-	LenaDDI_STREAM_INFO pStreamColorInfo[64], pStreamDepthInfo[64];
-	LenaDDI_ImgCallbackFn callbackFn;
+	ETRONDI_STREAM_INFO pStreamColorInfo[64], pStreamDepthInfo[64];
+	EtronDI_ImgCallbackFn callbackFn;
 
 	bool Init();
 	
@@ -26,10 +26,10 @@ private:
 	std::vector<DEVINFORMATIONEX> devInfo; //设备信息链
 	int fps; //图像输出的帧率
 	BOOL isImgRGB = true;
-	void* hLenaDDI = NULL; //设备设备初始化使用的指针
+	void* hEtronDI = NULL; //设备设备初始化使用的指针
 	DEVSELINFO pDevSelInfo; //设备选择信息
-	void* pHandleLenaDDI; //设备指针
+	void* pHandleEtronDI; //设备指针
 
 	void Release(void *dev);
-	bool GetLenaDDIDevice();
+	bool GetEtronDIDevice();
 };
