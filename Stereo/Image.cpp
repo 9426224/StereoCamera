@@ -64,7 +64,7 @@ void Image::GetImage()
 
             cv::Mat yuy2(height, width, CV_8UC2, returnColorBuf);
             cv::Mat rgb(height, width, CV_8UC3);
-            cv::cvtColor(yuy2, rgb , cv::COLOR_YUV2BGRA_YUY2);
+            cv::cvtColor(yuy2, rgb, cv::COLOR_YUV2BGRA_YUY2);
 
             colorImg = rgb;
             //cv::flip(img, colorImg ,0);
@@ -75,6 +75,7 @@ void Image::GetImage()
 void Image::Display()
 {
     cv::Mat depth, color;
+
     while (cv::waitKey(1) != 27)
     {
         // timespec t1, t2;
@@ -100,4 +101,28 @@ void Image::Display()
 
         // std::cout << deltaT << std::endl;
     }
+}
+
+std::vector<BoxInfo> Image::detectImage(cv::Mat color)
+{
+    object_rect effect_roi;
+
+    int resize_w = 320;
+
+    int resize_h = floor((height / width) * resize_w);
+
+    cv::Mat resized_img(cv::Size(resize_w, resize_w), CV_8UC3, cv::Scalar(0));
+
+    cv::Mat temp;
+
+    cv::resize(color, temp, cv::Size(resize_w, resize_h));
+
+    memcpy(resized_img.data + floor((resize_w - resize_h) / 2) * resize_w * 3, temp.data, resize_w * resize_h * 3);
+
+    effect_roi.x = 0;
+    effect_roi.y = floor((resize_w - resize_h) / 2);
+    effect_roi.width = resize_w;
+    effect_roi.height = resize_h;
+
+    return detector.detect(resized_img, 0.4, 0.5);
 }
