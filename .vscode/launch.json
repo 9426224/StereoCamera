@@ -9,7 +9,11 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/stereo",
-            "args": [],
+            "compilerPath": "usr/bin/g++",
+            "includePath": [
+                "/usr/local/include/opencv4"
+            ],
+            "args": ["-c", "-std=c++17 -pthread"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],

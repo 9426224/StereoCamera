@@ -9,15 +9,18 @@ project(StereoCamera)
 set(eSPDI_INCLUDE_DIR /home/ubuntu/StereoCamera/include/eSPDI/linux)
 set(eSPDI_LIB_DIR /home/ubuntu/StereoCamera/lib/eSPDI/linux/aarch64)
 
-find_package(OpenCV REQUIRED)
-if(OpenCV_FOUND)
-	message(STATUS "OpenCV Lib is Found!")
-endif()
+#find_package(OpenCV REQUIRED)
+#if(OpenCV_FOUND)
+#	message(STATUS "OpenCV Lib is Found!")
+#endif()
 
 find_package(ncnn)
 if(ncnn_FOUND)
 	message(STATUS "NCNN Lib is Found!")
 endif()
+
+set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv4")
+set(OpenCV_LIBS "/usr/local/lib/")
 
 include_directories(
 	 ${eSPDI_INCLUDE_DIR}

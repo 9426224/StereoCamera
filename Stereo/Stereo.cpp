@@ -17,6 +17,8 @@ int main()
 
     Image *image = new Image(device.pHandleEtronDI, device.pDevSelInfo);
 
+    image->OpenNet();
+
     thread t1 = image->GetImageThread();
     thread t2 = image->DisplayThread();
 

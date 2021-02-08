@@ -1,7 +1,33 @@
 #include "Image.h"
 
-void Image::Process(cv::Mat depth)
+void Image::OpenNet()
 {
+    nanoDet = new NanoDet("./nanodet_m.param", "./nanodet_m.bin", true);
+}
+
+void Image::Process(cv::Mat depth, cv::Mat color)
+{
+    auto boundingBox = detectImage(color);
+
+    float widthRatio = (float)width / (float)resizeWidth;
+    float heightRatio = (float)height / (float)resizeHeight;
+
+    int effectX = 0, effectY = floor((resizeWidth - resizeHeight) / 2.0);
+
+    cv::Mat background(cv::Size(resizeWidth, resizeWidth), CV_16UC1, cv::Scalar(0));
+
+    for(size_t i = 0; i < boundingBox.size();i++)
+    {
+        const BoxInfo& singleBox = boundingBox[i];
+
+        cv::Mat backgroundROI = background(cv::Rect(singleBox.x1,singleBox.y1, singleBox.y2 - singleBox.y1,singleBox.x2 - singleBox.x1));
+
+        cv::Rect rect(singleBox.x1, singleBox.y1, singleBox.y2 - singleBox.y1, singleBox.x2 - singleBox.x1);
+        
+        depth(rect).copyTo(backgroundROI);
+    }
+
+    depth = background;
 }
 
 std::thread Image::GetImageThread()
@@ -91,10 +117,11 @@ void Image::Display()
             color = colorImg;
         }
 
-        Process(depth);
+        Process(depth, color);
+
+        
 
         cv::imshow("depth", depth);
-        cv::imshow("color", color);
 
         // clock_gettime(CLOCK_MONOTONIC, &t2);
         // long long deltaT = (t2.tv_sec - t1.tv_sec) * 10 ^ 3 + t2.tv_nsec - t1.tv_nsec;
@@ -105,24 +132,22 @@ void Image::Display()
 
 std::vector<BoxInfo> Image::detectImage(cv::Mat color)
 {
-    object_rect effect_roi;
+    resizeWidth = nanoDet->inputSize;
 
-    int resize_w = 320;
+    resizeHeight = floor((height / width) * resizeWidth);
 
-    int resize_h = floor((height / width) * resize_w);
-
-    cv::Mat resized_img(cv::Size(resize_w, resize_w), CV_8UC3, cv::Scalar(0));
+    cv::Mat resizedImg(cv::Size(resizeWidth, resizeWidth), CV_8UC3, cv::Scalar(0));
 
     cv::Mat temp;
 
-    cv::resize(color, temp, cv::Size(resize_w, resize_h));
+    cv::resize(color, temp, cv::Size(resizeWidth, resizeHeight));
 
-    memcpy(resized_img.data + floor((resize_w - resize_h) / 2) * resize_w * 3, temp.data, resize_w * resize_h * 3);
+    int index = floor((resizeWidth - resizeHeight) / 2.0);
 
-    effect_roi.x = 0;
-    effect_roi.y = floor((resize_w - resize_h) / 2);
-    effect_roi.width = resize_w;
-    effect_roi.height = resize_h;
+    for (int i = 0; i < resizeHeight; i++)
+    {
+        memcpy(resizedImg.data + index * 3 + i * resizeWidth * 3, temp.data + i * resizeWidth * 3, resizeWidth * 3);
+    }
 
-    return detector.detect(resized_img, 0.4, 0.5);
+    return nanoDet->Detect(resizedImg, 0.4, 0.5);
 }
