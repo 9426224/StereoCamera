@@ -9,11 +9,11 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/stereo",
-            "compilerPath": "usr/bin/g++",
-            "includePath": [
-                "/usr/local/include/opencv4"
-            ],
-            "args": ["-c", "-std=c++17 -pthread"],
+            "args": ["-c", 
+                     "-pthread",
+                     "-std=c++17",
+                     "-o"
+                    ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],
@@ -26,7 +26,8 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build"
+            "preLaunchTask": "build",
+            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }

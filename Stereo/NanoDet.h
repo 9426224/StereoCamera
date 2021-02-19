@@ -28,8 +28,9 @@ public:
 
     ncnn::Net *Net;
 
+
     int inputSize = 320;
-    static bool hasGPU;
+    bool hasGPU;
     std::vector<HeadInfo> headsInfo{
         // cls_pred|dis_pred|stride
             {"792", "795",    8},

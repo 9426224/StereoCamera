@@ -14,20 +14,32 @@ void Image::Process(cv::Mat depth, cv::Mat color)
 
     int effectX = 0, effectY = floor((resizeWidth - resizeHeight) / 2.0);
 
-    cv::Mat background(cv::Size(resizeWidth, resizeWidth), CV_16UC1, cv::Scalar(0));
+    cv::Mat background(cv::Size(width, height), CV_16UC1, cv::Scalar(0));
 
-    for(size_t i = 0; i < boundingBox.size();i++)
+    std::cout << boundingBox.size() << std::endl;
+
+    for (size_t i = 0; i < boundingBox.size(); i++)
     {
-        const BoxInfo& singleBox = boundingBox[i];
+        BoxInfo &singleBox = boundingBox[i];
 
-        cv::Mat backgroundROI = background(cv::Rect(singleBox.x1,singleBox.y1, singleBox.y2 - singleBox.y1,singleBox.x2 - singleBox.x1));
+        singleBox.x1 = (singleBox.x1 - effectX) * widthRatio;
+        singleBox.x2 = (singleBox.x2 - effectX) * widthRatio;
+        singleBox.y1 = (singleBox.y1 - effectY) * heightRatio;
+        singleBox.y2 = (singleBox.y2 - effectY) * heightRatio;
 
-        cv::Rect rect(singleBox.x1, singleBox.y1, singleBox.y2 - singleBox.y1, singleBox.x2 - singleBox.x1);
-        
+        cv::Mat backgroundROI = background(cv::Rect(cv::Point(singleBox.x1, singleBox.y1),
+                                                    cv::Point(singleBox.x2, singleBox.y2)));
+
+        cv::Rect rect(cv::Point(singleBox.x1, singleBox.y1),
+                      cv::Point(singleBox.x2, singleBox.y2));
+
+        cv::Mat dp = depth(rect);
+
         depth(rect).copyTo(backgroundROI);
     }
 
-    depth = background;
+    //cv::imshow("depth", background);
+
 }
 
 std::thread Image::GetImageThread()
@@ -91,8 +103,7 @@ void Image::GetImage()
             cv::Mat yuy2(height, width, CV_8UC2, returnColorBuf);
             cv::Mat rgb(height, width, CV_8UC3);
             cv::cvtColor(yuy2, rgb, cv::COLOR_YUV2BGRA_YUY2);
-
-            colorImg = rgb;
+            cv::cvtColor(rgb, colorImg, cv::COLOR_BGR2RGB);
             //cv::flip(img, colorImg ,0);
         }
     }
@@ -119,9 +130,8 @@ void Image::Display()
 
         Process(depth, color);
 
-        
-
-        cv::imshow("depth", depth);
+        //cv::imshow("depth", depth);
+        //cv::imshow("color", color);
 
         // clock_gettime(CLOCK_MONOTONIC, &t2);
         // long long deltaT = (t2.tv_sec - t1.tv_sec) * 10 ^ 3 + t2.tv_nsec - t1.tv_nsec;
@@ -134,9 +144,9 @@ std::vector<BoxInfo> Image::detectImage(cv::Mat color)
 {
     resizeWidth = nanoDet->inputSize;
 
-    resizeHeight = floor((height / width) * resizeWidth);
+    resizeHeight = floor((height / (float)width) * resizeWidth);
 
-    cv::Mat resizedImg(cv::Size(resizeWidth, resizeWidth), CV_8UC3, cv::Scalar(0));
+    cv::Mat resizedImg = cv::Mat::zeros(resizeWidth, resizeWidth, CV_8UC3);
 
     cv::Mat temp;
 
@@ -144,10 +154,7 @@ std::vector<BoxInfo> Image::detectImage(cv::Mat color)
 
     int index = floor((resizeWidth - resizeHeight) / 2.0);
 
-    for (int i = 0; i < resizeHeight; i++)
-    {
-        memcpy(resizedImg.data + index * 3 + i * resizeWidth * 3, temp.data + i * resizeWidth * 3, resizeWidth * 3);
-    }
+    memcpy(resizedImg.data + index * resizeWidth * 3, temp.data, resizeHeight * resizeWidth * 3);
 
     return nanoDet->Detect(resizedImg, 0.4, 0.5);
 }
