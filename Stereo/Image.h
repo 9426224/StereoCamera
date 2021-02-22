@@ -1,6 +1,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/photo/cuda.hpp>
+#include "opencv2/videoio.hpp"
+#include "opencv2/core/cuda.hpp"
+#include <opencv2/cudaimgproc.hpp>
 #include "eSPDI.h"
 
 #include <iostream>
@@ -31,16 +35,22 @@ public:
     void OpenNet();
 
 private:
-    void Process(cv::Mat,cv::Mat);
+    cv::Mat Process(cv::Mat, cv::Mat);
     void GetImage();
     void Display();
-    std::vector<BoxInfo> detectImage(cv::Mat);
+    std::vector<BoxInfo> DetectImage(cv::Mat);
+    cv::Mat DrawBoxes(cv::Mat, cv::Mat, std::vector<BoxInfo>);
+    cv::Point GrayCenter(cv::Mat);
+    double FindPolygonRadius(int, int, cv::Point, double);
+    double ItemDistance(cv::Mat);
+    double AngleConvertor(cv::Point, float, float);
 
     NanoDet *nanoDet;
     cv::Mat depthImg, colorImg;
     std::shared_mutex imgMutex;
     void *pHandleEtronDI;
     DEVSELINFO pDevSelInfo;
+    cv::Point center;
 
     unsigned char *returnDepthBuf;
     unsigned char *returnColorBuf;
@@ -49,8 +59,9 @@ private:
     unsigned char *ColorBuf;
 
     int pSerialNum = 0;
-    int width = 1280, height = 720 , resizeWidth, resizeHeight;
+    int width = 1280, height = 720, resizeWidth, resizeHeight;
     unsigned long depthImageSize = 0, colorImageSize = 0;
     int maxDistance = 16560, minDistance = 5000;
     int fxAndBaseLine = 12821030;
+    double anglePerPixel = 0.01715625;
 };

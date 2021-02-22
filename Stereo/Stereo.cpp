@@ -9,9 +9,9 @@ using namespace cv;
 int main()
 {
     Device device;
-    if(!device.Init())
+    if (!device.Init())
     {
-        cout<<"Device Init Failed!"<<endl;
+        cout << "Device Init Failed!" << endl;
         return -1;
     }
 
@@ -24,6 +24,4 @@ int main()
 
     t1.join();
     t2.join();
-
-    
 }
