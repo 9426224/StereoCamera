@@ -115,8 +115,9 @@ std::vector<BoxInfo> Image::DetectImage(cv::Mat color)
 
     memcpy(resizedImg.data + index * resizeWidth * 3, temp.data, resizeHeight * resizeWidth * 3);
 
-    return nanoDet->Detect(resizedImg, 0.4, 0.5);
+    return nanoDet->Detect(resizedImg, 0.3, 0.5);
 }
+
 const int color_list[80][3] =
     {
         //{255 ,255 ,255}, //bg
@@ -227,6 +228,8 @@ cv::Mat Image::DrawBoxes(cv::Mat depth, cv::Mat color, std::vector<BoxInfo> boun
 
     cv::Mat background(cv::Size(width, height), CV_16UC1, cv::Scalar(0));
 
+    cv::Mat colorbg(cv::Size(width, height), CV_8UC3, cv::Scalar(0));
+
     //std::cout << boundingBox.size() << " Items:" << std::endl;
 
     for (size_t i = 0; i < boundingBox.size(); i++)
@@ -244,26 +247,58 @@ cv::Mat Image::DrawBoxes(cv::Mat depth, cv::Mat color, std::vector<BoxInfo> boun
         cv::Rect rect(cv::Point(singleBox.x1, singleBox.y1),
                       cv::Point(singleBox.x2, singleBox.y2));
 
+        cv::Mat colorbgROI = colorbg(cv::Rect(cv::Point(singleBox.x1, singleBox.y1),
+                                              cv::Point(singleBox.x2, singleBox.y2)));
+
+        //Start Process Color Image
+
+        cv::Mat cp = color(rect).clone();
+
+        cv::cvtColor(cp, cp, cv::COLOR_BGR2GRAY);
+
+        cv::adaptiveThreshold(cp, cp, 40000, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 7, 0);
+
+        cv::imshow("cp", cp);
+
+        //End Process
+
         //cv::cuda::GpuMat depthGpu(depth(rect));
 
         //cv::cuda::fastNlMeansDenoising(depthGpu, depthGpu, 3, 7, 21);
 
-        cv::Point center = GrayCenter(depth(rect));
+        //cv::cuda::bilateralFilter(depthGpu,depthGpu,-1,20,50);
 
-        double length = ItemDistance(depth(rect)) - 1400;
+        //cv::Mat d(depthGpu);
 
-        double radius = FindPolygonRadius(depth(rect).rows, depth(rect).cols, center, length);
+        //depth(rect) = d;
+
+        depth(rect) = PCA(depth(rect));
+
+        //cv::Point center = GrayCenter(depth(rect));
+
+        cv::Point center;
+        center.x = cvRound(singleBox.x1 / 2 + singleBox.x2 / 2);
+        center.y = cvRound(singleBox.y1 / 2 + singleBox.y2 / 2);
+        double length = ItemDistance(depth(rect)) - 1800;
+
+        //double length = depth(rect).at<ushort>(singleBox.x2/2-singleBox.x1/2,singleBox.y2/2-singleBox.y1);
+
+        //double radius = FindPolygonRadius(depth(rect).rows, depth(rect).cols, center, length);
+
+        double radius = ((double)singleBox.x2 - singleBox.x1) * length * 0.394024096 / 1280;
 
         double angle = AngleConvertor(center, singleBox.x1, singleBox.x2);
 
         depth(rect).copyTo(backgroundROI);
 
+        color(rect).copyTo(colorbgROI);
+
         cv::Scalar clrlist = cv::Scalar(color_list[singleBox.label][0], color_list[singleBox.label][1], color_list[singleBox.label][2]);
 
-        cv::rectangle(color, cv::Rect(cv::Point(singleBox.x1, singleBox.y1), cv::Point(singleBox.x2, singleBox.y2)), clrlist);
+        cv::rectangle(colorbg, cv::Rect(cv::Point(singleBox.x1, singleBox.y1), cv::Point(singleBox.x2, singleBox.y2)), clrlist);
 
         char text[256];
-        sprintf(text, "%s %.1f%% %.2f %.2fm %.2fmm", class_names[singleBox.label], singleBox.score * 100, angle, length / 1000, radius);
+        sprintf(text, "%s %.1f%% %.2f %.2fm %.2fcm width:%.2fpixel  height:%.2fpixel", class_names[singleBox.label], singleBox.score * 100, angle, length / 1000, radius / 10, singleBox.x2 - singleBox.x1, singleBox.y2 - singleBox.y1);
         int baseLine = 0;
         cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.6, 1, &baseLine);
 
@@ -271,17 +306,17 @@ cv::Mat Image::DrawBoxes(cv::Mat depth, cv::Mat color, std::vector<BoxInfo> boun
         int y = singleBox.y1 - label_size.height - baseLine;
         if (y < 0)
             y = 0;
-        if (x + label_size.width > color.cols)
-            x = color.cols - label_size.width;
+        if (x + label_size.width > colorbg.cols)
+            x = colorbg.cols - label_size.width;
 
-        cv::rectangle(color, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + baseLine)),
+        cv::rectangle(colorbg, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + baseLine)),
                       clrlist, -1);
 
-        cv::putText(color, text, cv::Point(x, y + label_size.height),
+        cv::putText(colorbg, text, cv::Point(x, y + label_size.height),
                     cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
     }
-    cv::imshow("color", color);
-    cv::imshow("depth", depth);
+    cv::imshow("color", colorbg);
+    cv::imshow("depth", background);
     return background;
 }
 
@@ -324,11 +359,11 @@ double Image::FindPolygonRadius(int width, int height, cv::Point center, double 
     {
         if (center.y >= height / 2)
         {
-            return (double)(sqrt(pow(center.x, 2) + pow(center.y, 2))) * distance * 0.23 / 720;
+            return (double)(sqrt(pow(center.x, 2) + pow(center.y, 2))) * distance * 0.221676 / 720;
         }
         else
         {
-            return (double)(sqrt(pow(center.x, 2) + pow(height - center.y, 2))) * distance * 0.23 / 720;
+            return (double)(sqrt(pow(center.x, 2) + pow(height - center.y, 2))) * distance * 0.221676 / 720;
         }
     }
     else
@@ -366,4 +401,17 @@ double Image::ItemDistance(cv::Mat depth)
 double Image::AngleConvertor(cv::Point center, float x, float y)
 {
     return 101.96 - ((double)x + center.x) * anglePerPixel;
+}
+
+cv::Mat Image::PCA(cv::Mat depth)
+{
+    int layer = 1;
+
+    cv::PCA pca(depth, cv::Mat(), cv::PCA::Flags::USE_AVG, layer);
+
+    depth = pca.project(depth);
+
+    depth = pca.backProject(depth);
+
+    return depth;
 }

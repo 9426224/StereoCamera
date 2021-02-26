@@ -44,6 +44,7 @@ private:
     double FindPolygonRadius(int, int, cv::Point, double);
     double ItemDistance(cv::Mat);
     double AngleConvertor(cv::Point, float, float);
+    cv::Mat PCA(cv::Mat);
 
     NanoDet *nanoDet;
     cv::Mat depthImg, colorImg;
@@ -61,7 +62,7 @@ private:
     int pSerialNum = 0;
     int width = 1280, height = 720, resizeWidth, resizeHeight;
     unsigned long depthImageSize = 0, colorImageSize = 0;
-    int maxDistance = 16560, minDistance = 5000;
+    int maxDistance = 40000, minDistance = 7000;
     int fxAndBaseLine = 12821030;
     double anglePerPixel = 0.01715625;
 };
