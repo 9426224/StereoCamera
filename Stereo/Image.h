@@ -8,12 +8,24 @@
 #include "eSPDI.h"
 
 #include <iostream>
+#include <stdio.h>
+#include <string>
 #include <shared_mutex>
 #include <mutex>
 #include <thread>
 #include "time.h"
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <termios.h>
 
 #include "NanoDet.h"
+
+typedef struct PolarInfo
+{
+    double distance;
+    double angle;
+    double radius;
+} PolarInfo;
 
 class Image
 {
@@ -31,19 +43,20 @@ public:
     }
 
     std::thread GetImageThread();
-    std::thread DisplayThread();
+    std::thread ProcessThread();
+    std::thread SerialPortThread();
     void OpenNet();
 
 private:
-    cv::Mat Process(cv::Mat, cv::Mat);
     void GetImage();
-    void Display();
+    void ProcessImage();
+    void SendData();
     std::vector<BoxInfo> DetectImage(cv::Mat);
-    cv::Mat DrawBoxes(cv::Mat, cv::Mat, std::vector<BoxInfo>);
-    cv::Point GrayCenter(cv::Mat);
-    double FindPolygonRadius(int, int, cv::Point, double);
+    std::vector<PolarInfo> DrawBoxes(cv::Mat, cv::Mat, std::vector<BoxInfo>);
+    cv::Point GrayCenter(cv::Mat, BoxInfo, bool);
+    double FindPolygonRadius(float, float, int);
     double ItemDistance(cv::Mat);
-    double AngleConvertor(cv::Point, float, float);
+    double AngleConvertor(cv::Point);
     cv::Mat PCA(cv::Mat);
 
     NanoDet *nanoDet;
@@ -51,6 +64,7 @@ private:
     std::shared_mutex imgMutex;
     void *pHandleEtronDI;
     DEVSELINFO pDevSelInfo;
+    std::vector<PolarInfo> PolarBox;
     cv::Point center;
 
     unsigned char *returnDepthBuf;

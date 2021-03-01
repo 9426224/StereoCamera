@@ -5,21 +5,19 @@ void Image::OpenNet()
     nanoDet = new NanoDet("./nanodet_m.param", "./nanodet_m.bin", true);
 }
 
-cv::Mat Image::Process(cv::Mat depth, cv::Mat color)
-{
-    auto boundingBox = DetectImage(color);
-
-    depth = DrawBoxes(depth, color, boundingBox);
-}
-
 std::thread Image::GetImageThread()
 {
     return std::thread([=] { GetImage(); });
 }
 
-std::thread Image::DisplayThread()
+std::thread Image::ProcessThread()
 {
-    return std::thread([=] { Display(); });
+    return std::thread([=] { ProcessImage(); });
+}
+
+std::thread Image::SerialPortThread()
+{
+    return std::thread([=] { SendData(); });
 }
 
 void Image::GetImage()
@@ -67,26 +65,25 @@ void Image::GetImage()
         }
 
         {
-            std::unique_lock<std::shared_mutex> lockImage(imgMutex);
+            std::unique_lock<std::shared_mutex> lock(imgMutex);
             depthImg = cv::Mat(cv::Size(width, height), CV_16UC1, DepthBuf);
 
             cv::Mat yuy2(height, width, CV_8UC2, returnColorBuf);
             cv::Mat rgb(height, width, CV_8UC3);
             cv::cvtColor(yuy2, rgb, cv::COLOR_YUV2RGB_YUY2);
             colorImg = rgb;
-            //cv::flip(img, colorImg ,0);
         }
     }
 }
 
-void Image::Display()
+void Image::ProcessImage()
 {
     cv::Mat depth, color;
 
     while (cv::waitKey(1) != 27)
     {
         {
-            std::shared_lock<std::shared_mutex> lockImage(imgMutex);
+            std::shared_lock<std::shared_mutex> lock(imgMutex);
             if (depthImg.empty())
             {
                 continue;
@@ -95,7 +92,58 @@ void Image::Display()
             color = colorImg;
         }
 
-        Process(depth, color);
+        auto boundingBox = DetectImage(color);
+
+        auto polar = DrawBoxes(depth, color, boundingBox);
+
+        {
+            std::unique_lock<std::shared_mutex> lock(imgMutex);
+            PolarBox = polar;
+        }
+    }
+}
+
+void Image::SendData()
+{
+    std::vector<PolarInfo> polar;
+
+    int serialPort = -1;
+
+    serialPort = open("/dev/ttyTHS2", O_RDWR | O_NONBLOCK);
+
+    if (serialPort == -1)
+    {
+        printf("Error: %s\n", strerror(errno));
+    }
+
+    struct termios options;
+
+    tcgetattr(serialPort, &options);
+    options.c_cflag = B115200 | CS8 | CLOCAL | CREAD; //<Set baud rate
+    options.c_iflag = IGNPAR;
+    options.c_oflag = 0;
+    options.c_lflag = 0;
+    tcflush(serialPort, TCIFLUSH);
+    tcsetattr(serialPort, TCSANOW, &options);
+
+    while (serialPort != -1)
+    {
+        {
+            std::shared_lock<std::shared_mutex> lock(imgMutex);
+            polar = PolarBox;
+        }
+
+        std::string data;
+        int count = 0;
+
+
+        for(int i = 0;i < polar.size();i++)
+        {
+            continue;
+            //write(serialPort, polar[i], polar.size());
+        }
+
+        write(serialPort, "aaaab", 5);
     }
 }
 
@@ -118,149 +166,27 @@ std::vector<BoxInfo> Image::DetectImage(cv::Mat color)
     return nanoDet->Detect(resizedImg, 0.3, 0.5);
 }
 
-const int color_list[80][3] =
-    {
-        //{255 ,255 ,255}, //bg
-        {216, 82, 24},
-        {236, 176, 31},
-        {125, 46, 141},
-        {118, 171, 47},
-        {76, 189, 237},
-        {238, 19, 46},
-        {76, 76, 76},
-        {153, 153, 153},
-        {255, 0, 0},
-        {255, 127, 0},
-        {190, 190, 0},
-        {0, 255, 0},
-        {0, 0, 255},
-        {170, 0, 255},
-        {84, 84, 0},
-        {84, 170, 0},
-        {84, 255, 0},
-        {170, 84, 0},
-        {170, 170, 0},
-        {170, 255, 0},
-        {255, 84, 0},
-        {255, 170, 0},
-        {255, 255, 0},
-        {0, 84, 127},
-        {0, 170, 127},
-        {0, 255, 127},
-        {84, 0, 127},
-        {84, 84, 127},
-        {84, 170, 127},
-        {84, 255, 127},
-        {170, 0, 127},
-        {170, 84, 127},
-        {170, 170, 127},
-        {170, 255, 127},
-        {255, 0, 127},
-        {255, 84, 127},
-        {255, 170, 127},
-        {255, 255, 127},
-        {0, 84, 255},
-        {0, 170, 255},
-        {0, 255, 255},
-        {84, 0, 255},
-        {84, 84, 255},
-        {84, 170, 255},
-        {84, 255, 255},
-        {170, 0, 255},
-        {170, 84, 255},
-        {170, 170, 255},
-        {170, 255, 255},
-        {255, 0, 255},
-        {255, 84, 255},
-        {255, 170, 255},
-        {42, 0, 0},
-        {84, 0, 0},
-        {127, 0, 0},
-        {170, 0, 0},
-        {212, 0, 0},
-        {255, 0, 0},
-        {0, 42, 0},
-        {0, 84, 0},
-        {0, 127, 0},
-        {0, 170, 0},
-        {0, 212, 0},
-        {0, 255, 0},
-        {0, 0, 42},
-        {0, 0, 84},
-        {0, 0, 127},
-        {0, 0, 170},
-        {0, 0, 212},
-        {0, 0, 255},
-        {0, 0, 0},
-        {36, 36, 36},
-        {72, 72, 72},
-        {109, 109, 109},
-        {145, 145, 145},
-        {182, 182, 182},
-        {218, 218, 218},
-        {0, 113, 188},
-        {80, 182, 188},
-        {127, 127, 0},
-};
-
-cv::Mat Image::DrawBoxes(cv::Mat depth, cv::Mat color, std::vector<BoxInfo> boundingBox)
+std::vector<PolarInfo> Image::DrawBoxes(cv::Mat depth, cv::Mat color, std::vector<BoxInfo> boundingBox)
 {
-    cv::cvtColor(color, color, cv::COLOR_RGB2BGR);
-    static const char *class_names[] = {"person", "bicycle", "car", "motorcycle", "airplane", "bus",
-                                        "train", "truck", "boat", "traffic light", "fire hydrant",
-                                        "stop sign", "parking meter", "bench", "bird", "cat", "dog",
-                                        "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
-                                        "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-                                        "skis", "snowboard", "sports ball", "kite", "baseball bat",
-                                        "baseball glove", "skateboard", "surfboard", "tennis racket",
-                                        "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl",
-                                        "banana", "apple", "sandwich", "orange", "broccoli", "carrot",
-                                        "hot dog", "pizza", "donut", "cake", "chair", "couch",
-                                        "potted plant", "bed", "dining table", "toilet", "tv", "laptop",
-                                        "mouse", "remote", "keyboard", "cell phone", "microwave", "oven",
-                                        "toaster", "sink", "refrigerator", "book", "clock", "vase",
-                                        "scissors", "teddy bear", "hair drier", "toothbrush"};
-
     float widthRatio = (float)width / (float)resizeWidth;
     float heightRatio = (float)height / (float)resizeHeight;
 
     int effectX = 0, effectY = floor((resizeWidth - resizeHeight) / 2.0);
 
-    cv::Mat background(cv::Size(width, height), CV_16UC1, cv::Scalar(0));
-
-    cv::Mat colorbg(cv::Size(width, height), CV_8UC3, cv::Scalar(0));
-
-    //std::cout << boundingBox.size() << " Items:" << std::endl;
+    std::vector<PolarInfo> polarBox;
 
     for (size_t i = 0; i < boundingBox.size(); i++)
     {
         BoxInfo &singleBox = boundingBox[i];
+        PolarInfo polar;
 
         singleBox.x1 = (singleBox.x1 - effectX) * widthRatio <= width ? ((singleBox.x1 - effectX) * widthRatio >= 0 ? (singleBox.x1 - effectX) * widthRatio : 0) : width;
         singleBox.x2 = (singleBox.x2 - effectX) * widthRatio <= width ? ((singleBox.x2 - effectX) * widthRatio >= 0 ? (singleBox.x2 - effectX) * widthRatio : 0) : width;
         singleBox.y1 = (singleBox.y1 - effectY) * heightRatio <= height ? ((singleBox.y1 - effectY) * heightRatio >= 0 ? (singleBox.y1 - effectY) * heightRatio : 0) : height;
         singleBox.y2 = (singleBox.y2 - effectY) * heightRatio <= height ? ((singleBox.y2 - effectY) * heightRatio >= 0 ? (singleBox.y2 - effectY) * heightRatio : 0) : height;
 
-        cv::Mat backgroundROI = background(cv::Rect(cv::Point(singleBox.x1, singleBox.y1),
-                                                    cv::Point(singleBox.x2, singleBox.y2)));
-
         cv::Rect rect(cv::Point(singleBox.x1, singleBox.y1),
                       cv::Point(singleBox.x2, singleBox.y2));
-
-        cv::Mat colorbgROI = colorbg(cv::Rect(cv::Point(singleBox.x1, singleBox.y1),
-                                              cv::Point(singleBox.x2, singleBox.y2)));
-
-        //Start Process Color Image
-
-        cv::Mat cp = color(rect).clone();
-
-        cv::cvtColor(cp, cp, cv::COLOR_BGR2GRAY);
-
-        cv::adaptiveThreshold(cp, cp, 40000, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 7, 0);
-
-        cv::imshow("cp", cp);
-
-        //End Process
 
         //cv::cuda::GpuMat depthGpu(depth(rect));
 
@@ -272,57 +198,40 @@ cv::Mat Image::DrawBoxes(cv::Mat depth, cv::Mat color, std::vector<BoxInfo> boun
 
         //depth(rect) = d;
 
-        depth(rect) = PCA(depth(rect));
+        //depth(rect) = PCA(depth(rect));
 
-        //cv::Point center = GrayCenter(depth(rect));
+        //相框中心绘制，获取图像中心点作为识别物体中点，true表示使用灰度重心法获取图像的几何中心点，false返回图像坐标中心。
+        cv::Point center = GrayCenter(depth(rect), singleBox, false);
 
-        cv::Point center;
-        center.x = cvRound(singleBox.x1 / 2 + singleBox.x2 / 2);
-        center.y = cvRound(singleBox.y1 / 2 + singleBox.y2 / 2);
-        double length = ItemDistance(depth(rect)) - 1800;
+        //获取极坐标中的表示物体距离零点的距离。
+        polar.distance = ItemDistance(depth(rect)) - 1800;
+        //double length = depth(rect).at<ushort>(singleBox.x2/2-singleBox.x1/2,singleBox.y2/2-singleBox.y1); //返回图像正中心距离信息。
 
-        //double length = depth(rect).at<ushort>(singleBox.x2/2-singleBox.x1/2,singleBox.y2/2-singleBox.y1);
+        //获取极坐标中的表示物体区域范围大小的函数。
+        polar.radius = FindPolygonRadius(singleBox.x1, singleBox.x2, polar.distance);
 
-        //double radius = FindPolygonRadius(depth(rect).rows, depth(rect).cols, center, length);
+        //获取极坐标的角度信息。
+        polar.angle = AngleConvertor(center);
 
-        double radius = ((double)singleBox.x2 - singleBox.x1) * length * 0.394024096 / 1280;
+        polarBox.push_back(polar);
 
-        double angle = AngleConvertor(center, singleBox.x1, singleBox.x2);
-
-        depth(rect).copyTo(backgroundROI);
-
-        color(rect).copyTo(colorbgROI);
-
-        cv::Scalar clrlist = cv::Scalar(color_list[singleBox.label][0], color_list[singleBox.label][1], color_list[singleBox.label][2]);
-
-        cv::rectangle(colorbg, cv::Rect(cv::Point(singleBox.x1, singleBox.y1), cv::Point(singleBox.x2, singleBox.y2)), clrlist);
-
-        char text[256];
-        sprintf(text, "%s %.1f%% %.2f %.2fm %.2fcm width:%.2fpixel  height:%.2fpixel", class_names[singleBox.label], singleBox.score * 100, angle, length / 1000, radius / 10, singleBox.x2 - singleBox.x1, singleBox.y2 - singleBox.y1);
-        int baseLine = 0;
-        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.6, 1, &baseLine);
-
-        int x = singleBox.x1;
-        int y = singleBox.y1 - label_size.height - baseLine;
-        if (y < 0)
-            y = 0;
-        if (x + label_size.width > colorbg.cols)
-            x = colorbg.cols - label_size.width;
-
-        cv::rectangle(colorbg, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + baseLine)),
-                      clrlist, -1);
-
-        cv::putText(colorbg, text, cv::Point(x, y + label_size.height),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
+        //std::cout << "Angle:" << polar.angle << " Radius:" << polar.radius << " Distance:" << polar.distance << std::endl;
     }
-    cv::imshow("color", colorbg);
-    cv::imshow("depth", background);
-    return background;
+
+    return polarBox;
 }
 
-cv::Point Image::GrayCenter(cv::Mat depth)
+cv::Point Image::GrayCenter(cv::Mat depth, BoxInfo singleBox, bool isGrayCenter)
 {
     cv::Point center;
+
+    if (!isGrayCenter)
+    {
+        center.x = cvRound(singleBox.x1 / 2 + singleBox.x2 / 2);
+        center.y = cvRound(singleBox.y1 / 2 + singleBox.y2 / 2);
+        return center;
+    }
+
     cv::MatIterator_<ushort> begin, end;
     double sum = 0;
     int threshold = 5000; //threshold means gray image's minimum usable distance.
@@ -353,30 +262,9 @@ cv::Point Image::GrayCenter(cv::Mat depth)
     return center;
 }
 
-double Image::FindPolygonRadius(int width, int height, cv::Point center, double distance)
+inline double Image::FindPolygonRadius(float x1, float x2, int length)
 {
-    if (center.x >= width / 2)
-    {
-        if (center.y >= height / 2)
-        {
-            return (double)(sqrt(pow(center.x, 2) + pow(center.y, 2))) * distance * 0.221676 / 720;
-        }
-        else
-        {
-            return (double)(sqrt(pow(center.x, 2) + pow(height - center.y, 2))) * distance * 0.221676 / 720;
-        }
-    }
-    else
-    {
-        if (center.y >= height / 2)
-        {
-            return (double)(sqrt(pow(width - center.x, 2) + pow(center.y, 2)));
-        }
-        else
-        {
-            return (double)(sqrt(pow(width - center.x, 2) + pow(height - center.y, 2)));
-        }
-    }
+    return ((double)x2 - x1) * length * 0.394024096 / 1280; // 0.221676 / 720;
 }
 
 double Image::ItemDistance(cv::Mat depth)
@@ -398,9 +286,9 @@ double Image::ItemDistance(cv::Mat depth)
     return sum / count;
 }
 
-double Image::AngleConvertor(cv::Point center, float x, float y)
+inline double Image::AngleConvertor(cv::Point center)
 {
-    return 101.96 - ((double)x + center.x) * anglePerPixel;
+    return 100.98 - (double)center.x * anglePerPixel;
 }
 
 cv::Mat Image::PCA(cv::Mat depth)

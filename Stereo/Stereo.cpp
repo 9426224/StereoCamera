@@ -20,8 +20,10 @@ int main()
     image->OpenNet();
 
     thread t1 = image->GetImageThread();
-    thread t2 = image->DisplayThread();
+    thread t2 = image->ProcessThread();
+    thread t3 = image->SerialPortThread();
 
     t1.join();
     t2.join();
+    t3.join();
 }
