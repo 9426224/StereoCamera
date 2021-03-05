@@ -2,7 +2,7 @@
 
 void Image::OpenNet()
 {
-    nanoDet = new NanoDet("./nanodet_m.param", "./nanodet_m.bin", true);
+    nanoDet = new NanoDet("./boat.param", "./boat.bin", true);
 }
 
 std::thread Image::GetImageThread()
@@ -118,13 +118,49 @@ void Image::SendData()
 
     struct termios options;
 
-    tcgetattr(serialPort, &options);
-    options.c_cflag = B115200 | CS8 | CLOCAL | CREAD; //<Set baud rate
-    options.c_iflag = IGNPAR;
-    options.c_oflag = 0;
+    if (tcgetattr(serialPort, &options) != 0)
+    {
+        printf("Error: %s\n", strerror(errno));
+    }
+
+    cfsetospeed(&options, 115200);
+    cfsetispeed(&options, 115200);
+
+    options.c_cflag = (options.c_cflag & ~CSIZE) | CS8;
+
+    options.c_iflag &= ~IGNBRK;
+
+    //options.c_iflag = PARMRK;
+
+    //options.c_cflag &= ~PARENB;
+
+    //options.c_cflag &= ~CSTOPB;
+
+    //options.c_cflag &= ~CSIZE;
+
+    //options.c_cflag &= ~CRTSCTS;
+
     options.c_lflag = 0;
-    tcflush(serialPort, TCIFLUSH);
-    tcsetattr(serialPort, TCSANOW, &options);
+
+    options.c_oflag = 0;
+
+    options.c_cc[VMIN] = 0;
+    options.c_cc[VTIME] = 5;
+
+    options.c_iflag &= ~(IXON | IXOFF | IXANY);
+
+    options.c_cflag |= (CLOCAL | CREAD);
+    options.c_cflag &= ~(PARENB | PARODD);
+    options.c_cflag |= 0;
+    options.c_cflag &= ~CSTOPB;
+    options.c_cflag &= ~CRTSCTS;
+
+    //tcflush(serialPort, TCIFLUSH);
+
+    if(tcsetattr(serialPort, TCSANOW, &options) != 0)
+    {
+        printf("Error: %s\n", strerror(errno));
+    }
 
     while (serialPort != -1)
     {
@@ -133,17 +169,45 @@ void Image::SendData()
             polar = PolarBox;
         }
 
-        std::string data;
-        int count = 0;
+        //unsigned char data[14 + polar.size()];
+        unsigned char data[14] = {0xc0, 0, 0, 0, 0, '\xc0', 0x00, 0x00, 0x00, 0x21, 0, 0, 0, 0x16};
+        unsigned char *pdata;
 
+        //unsigned char data[1];
 
-        for(int i = 0;i < polar.size();i++)
+        //data[0] = '\xc0';
+
+        //pdata = &data[0];
+
+        // *pdata++ = 0xc0;
+        // *pdata++ = 0x00;
+        // *pdata++ = 0x00;
+        // *pdata++ = 0x00;
+        // *pdata++ = 0x00;
+        // *pdata++ = 0xc0;
+        // *pdata++ = 0x00;
+        // *pdata++ = 0x00;
+        // *pdata++ = 0x00;
+        // *pdata++ = 0x21;
+
+        //int len = sizeof(PolarInfo)*polar.size();
+
+        //*pdata++ = len&0xff;
+
+        // *pdata++ = (len&0xff00)>>8;
+
+        //memcpy(pdata, polar.data(), len);
+
+        //*pdata += len;
+
+        //*pdata++ = 0x00;
+        //*pdata++ = 0x16;
+        for (int j = 0; j <= sizeof(data); j++)
         {
-            continue;
-            //write(serialPort, polar[i], polar.size());
+            printf("%x ", data[j]);
         }
-
-        write(serialPort, "aaaab", 5);
+        //write(serialPort, data, polar.size() +14);
+        write(serialPort, data, sizeof(data));
     }
 }
 

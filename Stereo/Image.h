@@ -20,12 +20,14 @@
 
 #include "NanoDet.h"
 
+#pragma pack(1)
 typedef struct PolarInfo
 {
-    double distance;
-    double angle;
-    double radius;
+    float angle;
+    float distance;
+    float radius;
 } PolarInfo;
+#pragma pack()
 
 class Image
 {
