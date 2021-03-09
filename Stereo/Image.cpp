@@ -2,7 +2,8 @@
 
 void Image::OpenNet()
 {
-    nanoDet = new NanoDet("./boat.param", "./boat.bin", true);
+    //nanoDet = new NanoDet("./boat.param", "./boat.bin", true);
+    nanoDet = new NanoDet("./coco.param", "./coco.bin", true);
 }
 
 std::thread Image::GetImageThread()
@@ -105,7 +106,7 @@ void Image::ProcessImage()
 
 void Image::SendData()
 {
-    std::vector<PolarInfo> polar;
+    std::vector<PolarInfo> polar,polarSwap;
 
     int serialPort = -1;
 
@@ -123,41 +124,17 @@ void Image::SendData()
         printf("Error: %s\n", strerror(errno));
     }
 
-    cfsetospeed(&options, 115200);
-    cfsetispeed(&options, 115200);
-
-    options.c_cflag = (options.c_cflag & ~CSIZE) | CS8;
+    options.c_cflag = B115200 | CS8 | CREAD | CLOCAL;
 
     options.c_iflag &= ~IGNBRK;
-
-    //options.c_iflag = PARMRK;
-
-    //options.c_cflag &= ~PARENB;
-
-    //options.c_cflag &= ~CSTOPB;
-
-    //options.c_cflag &= ~CSIZE;
-
-    //options.c_cflag &= ~CRTSCTS;
 
     options.c_lflag = 0;
 
     options.c_oflag = 0;
 
-    options.c_cc[VMIN] = 0;
-    options.c_cc[VTIME] = 5;
+    tcflush(serialPort, TCIFLUSH);
 
-    options.c_iflag &= ~(IXON | IXOFF | IXANY);
-
-    options.c_cflag |= (CLOCAL | CREAD);
-    options.c_cflag &= ~(PARENB | PARODD);
-    options.c_cflag |= 0;
-    options.c_cflag &= ~CSTOPB;
-    options.c_cflag &= ~CRTSCTS;
-
-    //tcflush(serialPort, TCIFLUSH);
-
-    if(tcsetattr(serialPort, TCSANOW, &options) != 0)
+    if (tcsetattr(serialPort, TCSANOW, &options) != 0)
     {
         printf("Error: %s\n", strerror(errno));
     }
@@ -166,47 +143,61 @@ void Image::SendData()
     {
         {
             std::shared_lock<std::shared_mutex> lock(imgMutex);
-            polar = PolarBox;
+            polarSwap = PolarBox;
         }
 
-        //unsigned char data[14 + polar.size()];
-        unsigned char data[14] = {0xc0, 0, 0, 0, 0, '\xc0', 0x00, 0x00, 0x00, 0x21, 0, 0, 0, 0x16};
+        if(polarSwap.size() != 0)
+        {
+            if(polar.size() ==0)
+            {
+                polar = polarSwap;
+            }
+            else if(polarSwap[0].angle == polar[0].angle)
+            {
+                continue;
+            }
+            else
+            {
+                polar = polarSwap;
+            }
+        }
+        else
+        {
+            continue;
+        }
+
+        unsigned char data[14 + polar.size() +2];
+
         unsigned char *pdata;
 
-        //unsigned char data[1];
+        pdata = &data[0];
 
-        //data[0] = '\xc0';
+        *pdata++ = 0xc0;
+        *pdata++ = 0x00;
+        *pdata++ = 0x00;
+        *pdata++ = 0x00;
+        *pdata++ = 0x00;
+        *pdata++ = 0xc0;
+        *pdata++ = 0x00;
+        *pdata++ = 0x00;
+        *pdata++ = 0x00;
+        *pdata++ = 0x21;
 
-        //pdata = &data[0];
+        int len = sizeof(PolarInfo) * polar.size();
 
-        // *pdata++ = 0xc0;
-        // *pdata++ = 0x00;
-        // *pdata++ = 0x00;
-        // *pdata++ = 0x00;
-        // *pdata++ = 0x00;
-        // *pdata++ = 0xc0;
-        // *pdata++ = 0x00;
-        // *pdata++ = 0x00;
-        // *pdata++ = 0x00;
-        // *pdata++ = 0x21;
+        *pdata++ = len & 0xff;
 
-        //int len = sizeof(PolarInfo)*polar.size();
+        *pdata++ = (len & 0xff00) >> 8;
 
-        //*pdata++ = len&0xff;
+        *pdata++ = (polar.size() & 0xff);
 
-        // *pdata++ = (len&0xff00)>>8;
+        memcpy(pdata, polar.data(), len);
 
-        //memcpy(pdata, polar.data(), len);
+        *pdata += len;
 
-        //*pdata += len;
+        *pdata++ = 0x00;
+        *pdata++ = 0x16;
 
-        //*pdata++ = 0x00;
-        //*pdata++ = 0x16;
-        for (int j = 0; j <= sizeof(data); j++)
-        {
-            printf("%x ", data[j]);
-        }
-        //write(serialPort, data, polar.size() +14);
         write(serialPort, data, sizeof(data));
     }
 }
@@ -275,11 +266,11 @@ std::vector<PolarInfo> Image::DrawBoxes(cv::Mat depth, cv::Mat color, std::vecto
         polar.radius = FindPolygonRadius(singleBox.x1, singleBox.x2, polar.distance);
 
         //获取极坐标的角度信息。
-        polar.angle = AngleConvertor(center);
+        polar.angle = (AngleConvertor(center)) * 1000000;
 
         polarBox.push_back(polar);
 
-        //std::cout << "Angle:" << polar.angle << " Radius:" << polar.radius << " Distance:" << polar.distance << std::endl;
+        std::cout << "Angle:" << polar.angle << " Radius:" << polar.radius << " Distance:" << polar.distance << std::endl;
     }
 
     return polarBox;

@@ -23,9 +23,9 @@
 #pragma pack(1)
 typedef struct PolarInfo
 {
-    float angle;
-    float distance;
-    float radius;
+    int angle;
+    int distance;
+    int radius;
 } PolarInfo;
 #pragma pack()
 
