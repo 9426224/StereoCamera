@@ -106,9 +106,11 @@ void Image::ProcessImage()
 
 void Image::SendData()
 {
-    std::vector<PolarInfo> polar,polarSwap;
+    std::vector<PolarInfo> polar, polarSwap;
 
     int serialPort = -1;
+    
+    unsigned short count = 0;
 
     serialPort = open("/dev/ttyTHS2", O_RDWR | O_NONBLOCK);
 
@@ -146,13 +148,13 @@ void Image::SendData()
             polarSwap = PolarBox;
         }
 
-        if(polarSwap.size() != 0)
+        if (polarSwap.size() != 0)
         {
-            if(polar.size() ==0)
+            if (polar.size() == 0)
             {
                 polar = polarSwap;
             }
-            else if(polarSwap[0].angle == polar[0].angle)
+            else if (polarSwap[0].angle == polar[0].angle)
             {
                 continue;
             }
@@ -166,7 +168,9 @@ void Image::SendData()
             continue;
         }
 
-        unsigned char data[14 + polar.size() +2];
+        int len = sizeof(PolarInfo) * polar.size();
+
+        unsigned char data[16 + len];
 
         unsigned char *pdata;
 
@@ -178,27 +182,31 @@ void Image::SendData()
         *pdata++ = 0x00;
         *pdata++ = 0x00;
         *pdata++ = 0xc0;
-        *pdata++ = 0x00;
-        *pdata++ = 0x00;
+
+        *pdata++ = count & 0xff;
+        *pdata++ = (count & 0xff00) >> 8;
+
         *pdata++ = 0x00;
         *pdata++ = 0x21;
-
-        int len = sizeof(PolarInfo) * polar.size();
 
         *pdata++ = len & 0xff;
 
         *pdata++ = (len & 0xff00) >> 8;
-
+        
         *pdata++ = (polar.size() & 0xff);
+
+        *pdata++ = (polar.size() & 0xff00) >> 8;
 
         memcpy(pdata, polar.data(), len);
 
-        *pdata += len;
+        pdata+= len;
 
-        *pdata++ = 0x00;
+        *pdata++ = CRC8(data, len);
         *pdata++ = 0x16;
 
         write(serialPort, data, sizeof(data));
+
+        count++;
     }
 }
 
@@ -270,7 +278,7 @@ std::vector<PolarInfo> Image::DrawBoxes(cv::Mat depth, cv::Mat color, std::vecto
 
         polarBox.push_back(polar);
 
-        std::cout << "Angle:" << polar.angle << " Radius:" << polar.radius << " Distance:" << polar.distance << std::endl;
+        //std::cout << "Angle:" << polar.angle << " Radius:" << polar.radius << " Distance:" << polar.distance << std::endl;
     }
 
     return polarBox;
@@ -357,4 +365,16 @@ cv::Mat Image::PCA(cv::Mat depth)
     depth = pca.backProject(depth);
 
     return depth;
+}
+
+unsigned char Image::CRC8(unsigned char *data, int len)
+{
+    unsigned char crc = 0x00;
+
+    while (len--)
+    {
+        crc = crcTable[crc ^ *data++];
+    }
+
+    return (crc);
 }
